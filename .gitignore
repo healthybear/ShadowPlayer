@@ -1,0 +1,44 @@
+# 依赖
+node_modules/
+.pnpm-store/
+
+# 构建产物
+dist/
+dist-ssr/
+
+# 环境变量（本地覆盖）
+.env.local
+.env.*.local
+
+# 编辑器
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# Lint 缓存
+.eslintcache
+.oxlintcache
+
+# 日志
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 测试覆盖率
+coverage/
+
+# 临时文件
+*.tmp
+*.temp
+node_modules/.tmp/
+
+# Claude Code
+.claude/
+global-packages.txt
