@@ -12,9 +12,11 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AppTopNav: typeof import('./src/components/AppTopNav.vue')['default']
+    ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElIcon: typeof import('element-plus/es')['ElIcon']
     ElInput: typeof import('element-plus/es')['ElInput']
+    ElProgress: typeof import('element-plus/es')['ElProgress']
     ElTag: typeof import('element-plus/es')['ElTag']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     IconCommunity: typeof import('./src/components/icons/IconCommunity.vue')['default']

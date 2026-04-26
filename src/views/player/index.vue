@@ -33,7 +33,7 @@ const poster = figmaDesignAssets.player.poster
             </div>
           </div>
           <div
-            class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"
+            class="pointer-events-none absolute inset-0 bg-linear-to-t from-black/60 to-transparent"
             data-node-id="1:93"
           />
           <!-- 字幕区 -->
@@ -76,7 +76,7 @@ const poster = figmaDesignAssets.player.poster
                 <h3 class="text-base font-bold text-main">shadow</h3>
                 <p class="text-caption text-secondary">/ˈʃædoʊ/</p>
               </div>
-              <el-button text circle class="!p-0">
+              <el-button text circle class="p-0!">
                 <el-icon><Microphone /></el-icon>
               </el-button>
             </div>
@@ -88,7 +88,7 @@ const poster = figmaDesignAssets.player.poster
               <el-button
                 type="primary"
                 size="small"
-                class="flex-1 !bg-[#0060A9] !border-[#0060A9]"
+                class="flex-1 bg-[#0060A9]! border-[#0060A9]!"
               >
                 <el-icon class="mr-1"><Plus /></el-icon>
                 Add to Vocab
@@ -107,19 +107,7 @@ const poster = figmaDesignAssets.player.poster
         >
           <div class="flex items-center gap-3" data-node-id="1:122">
             <span class="w-10 shrink-0 text-xs text-secondary">12:45</span>
-            <div
-              class="relative h-1.5 flex-1 overflow-hidden rounded-full bg-border-lighter"
-            >
-              <div
-                class="absolute inset-y-0 left-0 w-[55%] rounded-full bg-primary-light-7"
-              />
-              <div
-                class="absolute inset-y-0 left-0 w-[45%] rounded-full bg-primary"
-              />
-              <div
-                class="absolute left-[45%] top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#0060A9] shadow"
-              />
-            </div>
+            <el-slider class="flex-1" :model-value="45" :show-tooltip="false" />
             <span class="w-10 shrink-0 text-right text-xs text-secondary">
               24:32
             </span>
@@ -132,7 +120,7 @@ const poster = figmaDesignAssets.player.poster
               <el-button
                 type="primary"
                 circle
-                class="!bg-[#0060A9] !border-[#0060A9]"
+                class="bg-[#0060A9]! border-[#0060A9]!"
               >
                 <el-icon :size="20"><VideoPlay /></el-icon>
               </el-button>
@@ -148,17 +136,17 @@ const poster = figmaDesignAssets.player.poster
               <el-tag
                 type="primary"
                 effect="light"
-                class="cursor-pointer rounded-xl !border-primary-light-7 !px-4 !py-1"
+                class="cursor-pointer rounded-xl border-primary-light-7! px-4! py-1!"
               >
                 Subtitle Mode (Bilingual)
               </el-tag>
-              <el-tag class="cursor-pointer rounded-xl !px-4 !py-1">
+              <el-tag class="cursor-pointer rounded-xl px-4! py-1!">
                 Speed (1.0x)
               </el-tag>
-              <el-tag class="cursor-pointer rounded-xl !px-4 !py-1">
+              <el-tag class="cursor-pointer rounded-xl px-4! py-1!">
                 AB Repeat
               </el-tag>
-              <el-tag class="cursor-pointer rounded-xl !px-4 !py-1">
+              <el-tag class="cursor-pointer rounded-xl px-4! py-1!">
                 <el-icon class="mr-1"><RefreshRight /></el-icon>
                 Single Loop
               </el-tag>

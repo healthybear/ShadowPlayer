@@ -85,17 +85,13 @@ const items = [
             >
               {{ row.duration }}
             </span>
-            <div class="absolute bottom-0 left-0 right-0 h-1 bg-fill-light">
-              <div
-                v-if="!row.finished"
-                class="absolute bottom-0 left-0 top-0 bg-primary"
-                :style="{ width: `${row.progress}%` }"
-              />
-              <div
-                v-else
-                class="absolute bottom-0 left-0 right-0 top-0 bg-el-success"
-              />
-            </div>
+            <el-progress
+              class="absolute bottom-0 left-0 right-0"
+              :percentage="row.finished ? 100 : row.progress"
+              :status="row.finished ? 'success' : ''"
+              :show-text="false"
+              :stroke-width="4"
+            />
           </div>
 
           <div class="flex min-w-0 flex-1 flex-col justify-between py-0.5">
@@ -130,7 +126,7 @@ const items = [
               <el-button v-else size="small">
                 Watch Again
               </el-button>
-              <el-button text type="info" size="small" class="!px-0">
+              <el-button text type="info" size="small" class="px-0!">
                 <el-icon class="mr-1"><Delete /></el-icon>
                 Delete
               </el-button>
@@ -139,22 +135,13 @@ const items = [
         </div>
       </div>
 
-      <div
-        class="mt-6 flex items-center justify-center gap-2 text-base text-main"
+      <el-pagination
+        class="mt-6 justify-center"
+        layout="prev, pager, next"
+        :total="120"
+        :page-size="10"
         data-node-id="1:474"
-      >
-        <el-button text>
-          <el-icon><ArrowLeft /></el-icon>
-        </el-button>
-        <span>1</span>
-        <span>2</span>
-        <span>3</span>
-        <span class="text-placeholder">...</span>
-        <span>12</span>
-        <el-button text>
-          <el-icon><ArrowRight /></el-icon>
-        </el-button>
-      </div>
+      />
     </main>
   </div>
 </template>

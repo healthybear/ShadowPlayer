@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { figmaDesignAssets } from '@/config/figmaDesignAssets'
 
 defineOptions({ name: 'AppTopNav' })
 
@@ -145,19 +142,13 @@ const headerButtonDataNodeId: Record<typeof props.navPreset, string> = {
         </RouterLink>
       </nav>
 
-      <button
-        type="button"
-        class="size-9 shrink-0 border-0 bg-transparent p-0"
+      <el-avatar
+        :size="36"
+        :src="figmaDesignAssets.headerProfile"
         aria-label="账户"
-        data-name="Button"
+        class="shrink-0 cursor-pointer"
         :data-node-id="headerButtonDataNodeId[navPreset]"
-      >
-        <img
-          :src="figmaDesignAssets.headerProfile"
-          alt=""
-          class="size-full"
-        />
-      </button>
+      />
     </div>
   </header>
 </template>

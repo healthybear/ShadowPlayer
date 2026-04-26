@@ -1,7 +1,6 @@
 <script setup lang="ts">
 defineOptions({ name: 'HomePageView' })
 
-import { figmaDesignAssets } from '@/config/figmaDesignAssets'
 
 const recent = [
   {
@@ -88,12 +87,13 @@ const recent = [
                 alt=""
                 class="h-full w-full object-cover"
               />
-              <div class="absolute bottom-0 left-0 right-0 h-1 bg-[#E5E7EB]">
-                <div
-                  class="absolute bottom-0 left-0 top-0 bg-[#0060A9]"
-                  :style="{ width: `${item.progress}%` }"
-                />
-              </div>
+              <el-progress
+                class="absolute bottom-0 left-0 right-0"
+                :percentage="item.progress"
+                :show-text="false"
+                :stroke-width="4"
+                color="#0060A9"
+              />
             </div>
             <div class="min-w-0 flex-1">
               <h3 class="type-card-title text-clip">
