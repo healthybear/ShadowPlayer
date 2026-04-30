@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 defineOptions({ name: 'AppTopNav' })
 
 const props = withDefaults(
@@ -49,14 +48,6 @@ function getVisual(
   return want === key ? 'primary' : 'inactive'
 }
 
-function isPrimary(v: Visual) {
-  return v === 'primary'
-}
-
-function isPlayerHome(v: Visual) {
-  return v === 'player-home'
-}
-
 const linkStates = computed(() => {
   const p = route.path
   return links.map((l) => ({
@@ -64,91 +55,131 @@ const linkStates = computed(() => {
     v: getVisual(l.key, p),
   }))
 })
-
-const headerDataNodeId: Record<typeof props.navPreset, string> = {
-  home: '1:73',
-  history: '8:341',
-  vocabulary: '8:372',
-  player: '1:73',
-}
-
-const headerButtonDataNodeId: Record<typeof props.navPreset, string> = {
-  home: '1:85',
-  history: '8:353',
-  vocabulary: '8:383',
-  player: '1:85',
-}
 </script>
 
 <template>
-  <header
-    class="fixed left-0 right-0 top-0 z-top w-full border-b border-[#E5E7EB] bg-white pb-px shadow-[0_1px_2px_rgba(243,244,246,0.5)]"
-    data-name="Header - TopAppBar"
-    :data-node-id="headerDataNodeId[navPreset]"
-  >
-    <div
-      class="box-border flex h-12 w-full items-center justify-between pl-8 pr-[2.000625rem]"
-    >
-      <RouterLink
-        to="/"
-        class="inline-flex h-7 max-w-[121px] shrink-0 items-center text-[18px] font-bold leading-7 tracking-[-0.45px] text-[#2563EB] no-underline"
-      >
+  <header class="app-top-nav">
+    <div class="app-top-nav__container">
+      <RouterLink to="/" class="app-top-nav__logo">
         ShadowPlayer
       </RouterLink>
 
-      <nav
-        class="flex h-full shrink-0 items-stretch gap-8"
-        data-name="Nav"
-        :data-node-id="navPreset === 'player' ? '8:330' : undefined"
-      >
+      <nav class="app-top-nav__menu">
         <RouterLink
           v-for="{ l, v } in linkStates"
           :key="l.key"
-          v-slot="{ href, navigate }"
           :to="l.to"
-          custom
+          :class="['app-top-nav__link', `app-top-nav__link--${v}`]"
         >
-          <a
-            :href="href"
-            class="flex flex-col no-underline"
-            :class="
-              isPlayerHome(v) || isPrimary(v)
-                ? 'pt-3'
-                : 'pb-[12.5px] pt-[11.5px]'
-            "
-            @click="navigate"
-          >
-            <template v-if="isPrimary(v) || isPlayerHome(v)">
-              <span
-                class="inline-flex flex-col self-start border-b-2 pb-3.5"
-                :class="isPlayerHome(v) ? 'border-[#4B5563]' : 'border-[#2563EB]'"
-              >
-                <span
-                  class="h-5 text-sm font-medium leading-5 tracking-[-0.35px]"
-                  :class="isPlayerHome(v) ? 'text-[#4B5563]' : 'text-[#2563EB]'"
-                >
-                  {{ l.label }}
-                </span>
-              </span>
-            </template>
-            <span
-              v-else
-              class="h-5 text-sm font-medium leading-5 tracking-[-0.35px]"
-              :class="v === 'player-history' ? 'text-[#2563EB]' : 'text-[#4B5563]'"
-            >
-              {{ l.label }}
-            </span>
-          </a>
+          {{ l.label }}
         </RouterLink>
       </nav>
 
       <el-avatar
         :size="36"
-        :src="figmaDesignAssets.headerProfile"
+        src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
         aria-label="账户"
-        class="shrink-0 cursor-pointer"
-        :data-node-id="headerButtonDataNodeId[navPreset]"
+        class="app-top-nav__avatar"
       />
     </div>
   </header>
 </template>
+
+<style scoped lang="scss">
+.app-top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--el-index-top);
+  width: 100%;
+  background-color: var(--el-bg-color);
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  box-shadow: 0 1px 2px rgba(243, 244, 246, 0.5);
+  padding-bottom: 1px;
+
+  &__container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 48px;
+    padding: 0 32px;
+    box-sizing: border-box;
+  }
+
+  &__logo {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    max-width: 121px;
+    flex-shrink: 0;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 28px;
+    letter-spacing: -0.45px;
+    color: var(--el-color-primary);
+    text-decoration: none;
+  }
+
+  &__menu {
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+    flex-shrink: 0;
+    gap: 32px;
+  }
+
+  &__link {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    font-size: var(--el-font-size-base);
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: -0.35px;
+    transition: color var(--el-transition-duration);
+
+    // Primary state: 蓝 + 下划线
+    &--primary {
+      padding-top: 12px;
+      padding-bottom: 14px;
+      color: var(--el-color-primary);
+      border-bottom: 2px solid var(--el-color-primary);
+    }
+
+    // Inactive state: 灰、无下划线
+    &--inactive {
+      padding-top: 11.5px;
+      padding-bottom: 12.5px;
+      color: var(--el-text-color-secondary);
+    }
+
+    // Player-home state: 灰 + 灰下划线
+    &--player-home {
+      padding-top: 12px;
+      padding-bottom: 14px;
+      color: var(--el-text-color-secondary);
+      border-bottom: 2px solid var(--el-text-color-secondary);
+    }
+
+    // Player-history state: 仅蓝字
+    &--player-history {
+      padding-top: 11.5px;
+      padding-bottom: 12.5px;
+      color: var(--el-color-primary);
+    }
+
+    // Player-inactive state: 灰字
+    &--player-inactive {
+      padding-top: 11.5px;
+      padding-bottom: 12.5px;
+      color: var(--el-text-color-secondary);
+    }
+  }
+
+  &__avatar {
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+}
+</style>

@@ -1,8 +1,0 @@
-/* Element Plus 主题：通过 CSS 变量覆盖（与官网主题方式一致）
-   需要调整主色/圆角等时，在此添加 --el-* 变量
-   https://element-plus.org/zh-CN/guide/theming.html */
-
-:root {
-  /* 与 uno.config 中 primary.DEFAULT 一致 */
-  --el-color-primary: #409eff;
-}

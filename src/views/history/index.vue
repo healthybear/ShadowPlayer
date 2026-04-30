@@ -32,92 +32,86 @@ const items = [
 </script>
 
 <template>
-  <div class="min-h-screen bg-page" data-node-id="1:368">
+  <div class="history-page" data-node-id="1:368">
     <AppTopNav nav-preset="history" />
 
-    <main class="mx-auto max-w-[900px] px-4 pb-24 pt-20">
-      <div class="flex-between gap-4" data-node-id="1:370">
-        <div>
-          <h1 class="type-page-title" data-node-id="1:373">Playback History</h1>
-          <p class="mt-1 text-xs text-secondary" data-node-id="1:375">
+    <main class="history-page__main">
+      <div class="history-page__header" data-node-id="1:370">
+        <div class="history-page__header-left">
+          <h1 class="history-page__title" data-node-id="1:373">Playback History</h1>
+          <p class="history-page__subtitle" data-node-id="1:375">
             Manage your recently watched learning videos
           </p>
         </div>
-        <el-button plain class="border border-danger text-el-danger">
-          <el-icon class="mr-1">
+        <el-button plain type="danger">
+          <el-icon class="history-page__btn-icon">
             <Delete />
           </el-icon>
           Clear History
         </el-button>
       </div>
 
-      <div class="relative mt-2 pt-2">
+      <div class="history-page__search">
         <el-input
           size="large"
-          class="shadow-sm"
           placeholder="Search your history by filename..."
         >
           <template #prefix>
-            <el-icon class="text-secondary">
+            <el-icon>
               <Search />
             </el-icon>
           </template>
         </el-input>
       </div>
 
-      <div class="mt-4 flex flex-col gap-3">
+      <div class="history-page__list">
         <div
           v-for="(row, i) in items"
           :key="i"
-          class="flex gap-4 rounded-lg border bd-lighter bg-white p-3 shadow-[0_2px_12px_rgba(0,0,0,0.05)]"
-          :class="row.finished ? 'opacity-80' : ''"
+          class="history-page__item"
+          :class="{ 'history-page__item--finished': row.finished }"
         >
-          <div
-            class="relative h-[90px] w-[160px] shrink-0 overflow-hidden rounded bg-fill"
-          >
-            <img
-              :src="row.thumb"
-              alt=""
-              class="h-full w-full object-cover"
-            />
-            <span
-              class="absolute bottom-1 right-1 rounded bg-black/70 px-1 py-0.5 text-[10px] text-white"
-            >
+          <div class="history-page__thumb">
+            <img :src="row.thumb" alt="" class="history-page__thumb-img" />
+            <span class="history-page__duration">
               {{ row.duration }}
             </span>
             <el-progress
-              class="absolute bottom-0 left-0 right-0"
+              class="history-page__progress"
               :percentage="row.finished ? 100 : row.progress"
-              :status="row.finished ? 'success' : ''"
+              :status="row.finished ? 'success' : undefined"
               :show-text="false"
               :stroke-width="4"
             />
           </div>
 
-          <div class="flex min-w-0 flex-1 flex-col justify-between py-0.5">
-            <div>
-              <h3 class="type-card-title font-bold">
+          <div class="history-page__content">
+            <div class="history-page__info">
+              <h3 class="history-page__item-title">
                 {{ row.title }}
               </h3>
-              <div class="mt-1 flex flex-wrap items-center gap-3 text-xs text-secondary">
-                <span class="inline-flex items-center gap-1">
+              <div class="history-page__meta">
+                <span class="history-page__meta-item">
                   <el-icon><Clock /></el-icon>
                   {{ row.last }}
                 </span>
-                <span v-if="!row.finished" class="inline-flex items-center gap-1">
+                <span
+                  v-if="!row.finished"
+                  class="history-page__meta-item"
+                >
                   <el-icon><VideoPlay /></el-icon>
                   {{ row.progress }}% Completed
                 </span>
                 <span
                   v-else
-                  class="inline-flex items-center gap-1 text-el-success"
+                  class="history-page__meta-item history-page__meta-item--success"
                 >
                   <el-icon><CircleCheck /></el-icon>
                   Finished
                 </span>
               </div>
             </div>
-            <div class="mt-3 flex items-center gap-3">
+            <div class="history-page__actions">
               <RouterLink v-if="!row.finished" to="/player">
                 <el-button type="primary" size="small">
                   Continue Playing
@@ -126,8 +120,8 @@ const items = [
               <el-button v-else size="small">
                 Watch Again
               </el-button>
-              <el-button text type="info" size="small" class="px-0!">
-                <el-icon class="mr-1"><Delete /></el-icon>
+              <el-button text type="info" size="small">
+                <el-icon class="history-page__btn-icon"><Delete /></el-icon>
                 Delete
               </el-button>
             </div>
@@ -136,7 +130,7 @@ const items = [
       </div>
 
       <el-pagination
-        class="mt-6 justify-center"
+        class="history-page__pagination"
         layout="prev, pager, next"
         :total="120"
         :page-size="10"
@@ -145,3 +139,157 @@ const items = [
     </main>
   </div>
 </template>
+
+<style scoped lang="scss">
+.history-page {
+  min-height: 100vh;
+  background-color: var(--el-bg-color-page);
+
+  &__main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 16px 96px;
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  &__header-left {
+    flex: 1;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: var(--el-font-size-extra-large);
+    font-weight: 700;
+    line-height: 28px;
+    color: var(--el-text-color-primary);
+  }
+
+  &__subtitle {
+    margin: 4px 0 0;
+    font-size: var(--el-font-size-extra-small);
+    line-height: 18px;
+    color: var(--el-text-color-secondary);
+  }
+
+  &__btn-icon {
+    margin-right: 4px;
+  }
+
+  &__search {
+    position: relative;
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+
+  &__list {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__item {
+    display: flex;
+    gap: 16px;
+    padding: 12px;
+    background-color: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: var(--el-border-radius-base);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+    &--finished {
+      opacity: 0.8;
+    }
+  }
+
+  &__thumb {
+    position: relative;
+    width: 160px;
+    height: 90px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: var(--el-border-radius-small);
+    background-color: var(--el-fill-color);
+  }
+
+  &__thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &__duration {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    padding: 2px 4px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: var(--el-border-radius-small);
+    font-size: 10px;
+    color: #fff;
+  }
+
+  &__progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+    min-width: 0;
+    padding: 2px 0;
+  }
+
+  &__item-title {
+    margin: 0;
+    font-size: var(--el-font-size-medium);
+    font-weight: 700;
+    line-height: 22px;
+    color: var(--el-text-color-primary);
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+    font-size: var(--el-font-size-extra-small);
+    color: var(--el-text-color-secondary);
+  }
+
+  &__meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    &--success {
+      color: var(--el-color-success);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  &__pagination {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+  }
+}
+</style>

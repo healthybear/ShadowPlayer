@@ -34,77 +34,185 @@ const words = [
 </script>
 
 <template>
-  <div class="min-h-screen bg-page" data-node-id="1:237">
+  <div class="vocabulary-page" data-node-id="1:237">
     <AppTopNav nav-preset="vocabulary" />
 
-    <main class="mx-auto max-w-[960px] px-4 pb-24 pt-20">
-      <div class="flex-between mb-8" data-node-id="1:239">
-        <div class="flex items-center gap-3">
-          <h1 class="type-page-title" data-node-id="1:242">My Vocabulary</h1>
-          <span class="tag-primary text-xs font-medium" data-node-id="1:244">
+    <main class="vocabulary-page__main">
+      <div class="vocabulary-page__header" data-node-id="1:239">
+        <div class="vocabulary-page__header-left">
+          <h1 class="vocabulary-page__title" data-node-id="1:242">My Vocabulary</h1>
+          <el-tag type="primary" effect="light" data-node-id="1:244">
             Total 23 Words
-          </span>
+          </el-tag>
         </div>
-        <div class="flex gap-2">
+        <div class="vocabulary-page__header-actions">
           <el-button>
-            <el-icon class="mr-1"><Search /></el-icon>
+            <el-icon class="vocabulary-page__btn-icon"><Search /></el-icon>
             Search
           </el-button>
           <el-button>
-            <el-icon class="mr-1"><Filter /></el-icon>
+            <el-icon class="vocabulary-page__btn-icon"><Filter /></el-icon>
             Filter
           </el-button>
         </div>
       </div>
 
-      <div
-        class="grid grid-cols-1 gap-4 md:grid-cols-2"
-        data-node-id="1:256"
-      >
+      <div class="vocabulary-page__grid" data-node-id="1:256">
         <article
           v-for="(w, i) in words"
           :key="w.word"
-          class="relative rounded-lg border bd-lighter bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+          class="vocabulary-page__card"
           :data-node-id="i === 0 ? '1:257' : undefined"
         >
-          <div class="flex-between">
-            <div class="flex items-center gap-2">
-              <h2 class="text-lg font-bold text-main">
+          <div class="vocabulary-page__card-header">
+            <div class="vocabulary-page__card-title-row">
+              <h2 class="vocabulary-page__word">
                 {{ w.word }}
               </h2>
-              <el-button text circle class="!p-0">
+              <el-button text circle size="small">
                 <el-icon><Microphone /></el-icon>
               </el-button>
             </div>
           </div>
-          <p class="mt-2 text-caption italic text-secondary">
+          <p class="vocabulary-page__ipa">
             {{ w.ipa }}
           </p>
-          <div
-            class="mt-2 rounded bg-fill-light p-3 text-sm text-main"
-            data-node-id="1:270"
-          >
+          <div class="vocabulary-page__translation" data-node-id="1:270">
             {{ w.zh }}
           </div>
-          <div
-            class="divider-x mt-4 flex-between pt-3 text-xs text-placeholder"
-          >
-            <span class="text-[#0060A9]">{{ w.source }}</span>
-            <span>{{ w.time }}</span>
+          <div class="vocabulary-page__card-footer">
+            <span class="vocabulary-page__source">{{ w.source }}</span>
+            <span class="vocabulary-page__time">{{ w.time }}</span>
           </div>
         </article>
       </div>
 
-      <div class="mt-8 flex justify-center pt-4" data-node-id="1:349">
-        <el-button
-          type="primary"
-          size="large"
-          class="!bg-[#0060A9] !border-[#0060A9] shadow-[0_10px_15px_-3px_rgba(0,96,169,0.2)]"
-        >
-          <el-icon class="mr-2"><Download /></el-icon>
+      <div class="vocabulary-page__export" data-node-id="1:349">
+        <el-button type="primary" size="large">
+          <el-icon class="vocabulary-page__btn-icon"><Download /></el-icon>
           Export to CSV
         </el-button>
       </div>
     </main>
   </div>
 </template>
+
+<style scoped lang="scss">
+.vocabulary-page {
+  min-height: 100vh;
+  background-color: var(--el-bg-color-page);
+
+  &__main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 80px 16px 96px;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  &__header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: var(--el-font-size-extra-large);
+    font-weight: 700;
+    line-height: 28px;
+    color: var(--el-text-color-primary);
+  }
+
+  &__header-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  &__btn-icon {
+    margin-right: 4px;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  &__card {
+    position: relative;
+    padding: 20px;
+    background-color: var(--el-bg-color);
+    border: 1px solid var(--el-border-color-lighter);
+    border-radius: var(--el-border-radius-base);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  &__card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__card-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__word {
+    margin: 0;
+    font-size: var(--el-font-size-large);
+    font-weight: 700;
+    color: var(--el-text-color-primary);
+  }
+
+  &__ipa {
+    margin: 8px 0 0;
+    font-size: var(--el-font-size-extra-small);
+    font-style: italic;
+    color: var(--el-text-color-secondary);
+  }
+
+  &__translation {
+    margin-top: 8px;
+    padding: 12px;
+    background-color: var(--el-fill-color-light);
+    border-radius: var(--el-border-radius-small);
+    font-size: var(--el-font-size-small);
+    color: var(--el-text-color-primary);
+  }
+
+  &__card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--el-border-color-lighter);
+    font-size: var(--el-font-size-extra-small);
+    color: var(--el-text-color-placeholder);
+  }
+
+  &__source {
+    color: var(--el-color-primary);
+  }
+
+  &__export {
+    display: flex;
+    justify-content: center;
+    margin-top: 32px;
+    padding-top: 16px;
+  }
+}
+</style>

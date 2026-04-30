@@ -1,0 +1,165 @@
+/* Element Plus 主题：通过 CSS 变量覆盖（与官网主题方式一致）
+   需要调整主色/圆角等时，在此添加 --el-* 变量
+   https://element-plus.org/zh-CN/guide/theming.html */
+
+:root {
+  /* ============ 主题色系 ============ */
+  /* Primary 主色 */
+  --el-color-primary: #409EFF;
+  --el-color-primary-light-3: #79BBFF;
+  --el-color-primary-light-5: #A0CFFF;
+  --el-color-primary-light-7: #C6E2FF;
+  --el-color-primary-light-8: #D9ECFF;
+  --el-color-primary-light-9: #ECF5FF;
+  --el-color-primary-dark-2: #337ECC;
+
+  /* Success 成功色 */
+  --el-color-success: #67C23A;
+  --el-color-success-light-3: #95D475;
+  --el-color-success-light-5: #B3E19D;
+  --el-color-success-light-7: #D1EDB8;
+  --el-color-success-light-8: #E1F3D8;
+  --el-color-success-light-9: #F0F9EB;
+  --el-color-success-dark-2: #529B2E;
+
+  /* Warning 警告色 */
+  --el-color-warning: #E6A23C;
+  --el-color-warning-light-3: #EEBE77;
+  --el-color-warning-light-5: #F3D19E;
+  --el-color-warning-light-7: #F8E3C5;
+  --el-color-warning-light-8: #FAECD8;
+  --el-color-warning-light-9: #FDF6EC;
+  --el-color-warning-dark-2: #B88230;
+
+  /* Danger 危险色 */
+  --el-color-danger: #F56C6C;
+  --el-color-danger-light-3: #F89898;
+  --el-color-danger-light-5: #FAB6B6;
+  --el-color-danger-light-7: #FCD3D3;
+  --el-color-danger-light-8: #FDE2E2;
+  --el-color-danger-light-9: #FEF0F0;
+  --el-color-danger-dark-2: #C45656;
+
+  /* Info 信息色 */
+  --el-color-info: #909399;
+  --el-color-info-light-3: #B1B3B8;
+  --el-color-info-light-5: #C8C9CC;
+  --el-color-info-light-7: #DEDFE0;
+  --el-color-info-light-8: #E9E9EB;
+  --el-color-info-light-9: #F4F4F5;
+  --el-color-info-dark-2: #73767A;
+
+  /* ============ 文字颜色 ============ */
+  --el-text-color-primary: #303133;
+  --el-text-color-regular: #606266;
+  --el-text-color-secondary: #909399;
+  --el-text-color-placeholder: #A8ABB2;
+  --el-text-color-disabled: #C0C4CC;
+
+  /* ============ 边框颜色 ============ */
+  --el-border-color: #DCDFE6;
+  --el-border-color-light: #E4E7ED;
+  --el-border-color-lighter: #EBEEF5;
+  --el-border-color-extra-light: #F2F6FC;
+  --el-border-color-dark: #D4D7DE;
+  --el-border-color-darker: #CDD0D6;
+
+  /* ============ 填充背景色 ============ */
+  --el-fill-color: #F0F2F5;
+  --el-fill-color-light: #F5F7FA;
+  --el-fill-color-lighter: #FAFAFA;
+  --el-fill-color-extra-light: #FAFCFF;
+  --el-fill-color-dark: #EBEDF0;
+  --el-fill-color-darker: #E6E8EB;
+  --el-fill-color-blank: #FFFFFF;
+
+  /* 页面背景色 */
+  --el-bg-color: #FFFFFF;
+  --el-bg-color-page: #F2F6FC;
+  --el-bg-color-overlay: #FFFFFF;
+
+  /* ============ 圆角 ============ */
+  --el-border-radius-base: 4px;
+  --el-border-radius-small: 2px;
+  --el-border-radius-round: 20px;
+  --el-border-radius-circle: 100%;
+
+  /* ============ 阴影 ============ */
+  --el-box-shadow: 0px 12px 32px 4px rgba(0, 0, 0, 0.04), 0px 8px 20px rgba(0, 0, 0, 0.08);
+  --el-box-shadow-light: 0px 0px 12px rgba(0, 0, 0, 0.12);
+  --el-box-shadow-lighter: 0px 0px 6px rgba(0, 0, 0, 0.12);
+  --el-box-shadow-dark: 0px 16px 48px 16px rgba(0, 0, 0, 0.08), 0px 12px 32px rgba(0, 0, 0, 0.12), 0px 8px 16px -8px rgba(0, 0, 0, 0.16);
+
+  /* ============ 过渡时间 ============ */
+  --el-transition-duration: 0.3s;
+  --el-transition-duration-fast: 0.2s;
+
+  /* ============ 字体 ============ */
+  --el-font-size-extra-large: 20px;
+  --el-font-size-large: 18px;
+  --el-font-size-medium: 16px;
+  --el-font-size-base: 14px;
+  --el-font-size-small: 13px;
+  --el-font-size-extra-small: 12px;
+
+  /* ============ 组件尺寸 ============ */
+  --el-component-size-large: 40px;
+  --el-component-size: 32px;
+  --el-component-size-small: 24px;
+
+  /* ============ 字体家族 ============ */
+  --el-font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+
+  /* ============ 字重 ============ */
+  --el-font-weight-primary: 500;
+
+  /* ============ 行高 ============ */
+  --el-font-line-height-primary: 24px;
+
+  /* ============ z-index 层级 ============ */
+  --el-index-normal: 1;
+  --el-index-top: 1000;
+  --el-index-popper: 2000;
+
+  /* ============ 禁用状态透明度 ============ */
+  --el-disabled-opacity: 0.5;
+
+  /* ============ 遮罩层 ============ */
+  --el-overlay-color: rgba(0, 0, 0, 0.5);
+  --el-overlay-color-light: rgba(0, 0, 0, 0.3);
+  --el-overlay-color-lighter: rgba(0, 0, 0, 0.2);
+
+  /* ============ Mask 遮罩 ============ */
+  --el-mask-color: rgba(0, 0, 0, 0.5);
+  --el-mask-color-extra-light: rgba(0, 0, 0, 0.3);
+}
+
+/* ============ 组件级别的细节调整 ============ */
+
+/* Menu 组件 */
+.el-menu {
+  border-right: none;
+}
+
+.el-menu-item,
+.el-sub-menu__title {
+  height: 48px;
+  line-height: 48px;
+}
+
+/* Button 组件 */
+.el-button {
+  font-weight: 400;
+}
+
+/* Input 组件 */
+.el-input__inner {
+  font-size: var(--el-font-size-base);
+}
+
+/* 全局禁用状态 */
+.is-disabled {
+  cursor: not-allowed;
+  opacity: var(--el-disabled-opacity);
+}
+
