@@ -1,3 +1,24 @@
+/**
+ * UnoCSS 配置 - Material Design 3 扩展
+ *
+ * UnoCSS 是什么？
+ * - 即时按需的原子化 CSS 引擎
+ * - 只生成你实际使用的 CSS 类
+ * - 比传统 CSS 框架更轻量、更快
+ *
+ * 为什么扩展 UnoCSS？
+ * 1. 集成 Material Design 3 tokens：让 UnoCSS 支持 Material 3 的颜色、圆角、动画
+ * 2. 保持 Element Plus 兼容性：同时支持 Element Plus 的设计规范
+ * 3. 提供快捷类：减少重复代码，提高开发效率
+ *
+ * 企业项目经验：
+ * - 原子化 CSS 是现代前端的趋势，比传统 BEM 更灵活
+ * - 配置好 theme 后，团队成员使用统一的设计 tokens
+ * - shortcuts 可以封装常用模式，避免重复
+ *
+ * @see https://unocss.dev/
+ */
+
 import { defineConfig, presetAttributify, presetWind4 } from 'unocss'
 
 // Element Plus 设计 token（与官方 CSS 变量保持一致）
@@ -12,6 +33,15 @@ export default defineConfig({
   theme: {
     colors: {
       // Material Design 3 colors (md- prefix)
+      //
+      // 为什么要在 UnoCSS 中定义 Material 3 颜色？
+      // 1. 让 UnoCSS 支持 Material 3 颜色类（如 bg-md-primary、text-md-on-surface）
+      // 2. 与 CSS 变量配合使用，保持一致性
+      // 3. 方便在 HTML 中直接使用原子类
+      //
+      // 企业项目经验：
+      // - 颜色定义应该在一个地方（material-tokens.css），这里只是映射
+      // - 使用语义化的颜色名（primary/surface）而不是具体颜色值（purple/white）
       md: {
         primary: '#6750A4',
         'on-primary': '#FFFFFF',
@@ -105,6 +135,18 @@ export default defineConfig({
 
     borderRadius: {
       // Material Design 3 shape tokens
+      //
+      // 为什么要扩展 borderRadius？
+      // - 让 UnoCSS 支持 Material 3 的圆角类（如 rounded-md-medium、rounded-md-large）
+      // - Material 3 使用较大的圆角（12px），比传统设计更柔和
+      //
+      // 使用示例：
+      // - <div class="rounded-md-medium"> → border-radius: 12px
+      // - <div class="rounded-md-full"> → border-radius: 9999px（完全圆形）
+      //
+      // 企业项目经验：
+      // - 圆角大小应该从预定义的 tokens 中选择，不要随意设置
+      // - Material 3 的圆角系统让界面更有亲和力
       'md-none': '0px',
       'md-extra-small': '4px',
       'md-small': '8px',
@@ -148,6 +190,18 @@ export default defineConfig({
 
     transitionDuration: {
       // Material Design 3 motion durations
+      //
+      // 为什么要扩展 transitionDuration？
+      // - 让 UnoCSS 支持 Material 3 的动画时长类（如 duration-md-short4、duration-md-medium2）
+      // - 统一的动画时长让界面交互节奏一致
+      //
+      // 使用示例：
+      // - <div class="transition duration-md-short4"> → transition-duration: 200ms
+      // - <div class="transition duration-md-medium2"> → transition-duration: 300ms
+      //
+      // 企业项目经验：
+      // - 动画时长不应该随意设置，应该从预定义的 tokens 中选择
+      // - 过长的动画会让用户觉得"卡顿"，过短的动画会让用户看不清
       'md-short1': '50ms',
       'md-short2': '100ms',
       'md-short3': '150ms',
@@ -167,6 +221,19 @@ export default defineConfig({
 
     transitionTimingFunction: {
       // Material Design 3 easing curves
+      //
+      // 为什么要扩展 transitionTimingFunction？
+      // - 让 UnoCSS 支持 Material 3 的缓动函数类（如 ease-md-standard、ease-md-emphasized）
+      // - 缓动函数让动画更自然，符合物理直觉
+      //
+      // 使用示例：
+      // - <div class="transition ease-md-standard"> → cubic-bezier(0.4, 0, 0.2, 1)
+      // - <div class="transition ease-md-emphasized-decelerate"> → 快进慢出（进入动画）
+      //
+      // 企业项目经验：
+      // - 缓动函数比线性动画（linear）更自然
+      // - 进入动画用 decelerate（快进慢出），退出动画用 accelerate（慢进快出）
+      // - Material 3 的缓动函数是精心设计的，直接使用即可
       'md-standard': 'cubic-bezier(0.4, 0, 0.2, 1)',
       'md-emphasized': 'cubic-bezier(0.2, 0, 0, 1)',
       'md-emphasized-decelerate': 'cubic-bezier(0.05, 0.7, 0.1, 1)',

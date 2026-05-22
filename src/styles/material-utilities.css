@@ -1,4 +1,51 @@
+/**
+ * Material Design 3 Utilities
+ *
+ * 这个文件包含 Material Design 3 的工具类：
+ * - State Layer: 交互状态的半透明覆盖层
+ * - Ripple Effect: 波纹点击效果
+ * - Elevation: 阴影/层级工具类
+ * - Transition: 过渡动画工具类
+ *
+ * 为什么需要这些工具类？
+ * - 提供可复用的交互效果，避免重复代码
+ * - 统一的动画和交互风格
+ * - 符合 Material Design 3 规范
+ *
+ * 企业项目经验：
+ * - 工具类让开发更高效，不需要每次都写相同的 CSS
+ * - 统一的交互效果让界面更专业
+ */
+
 /* Material Design 3 Utilities */
+
+/* ========================================
+ * State Layer (交互状态层)
+ * ======================================== */
+
+/* State Layer 是 Material Design 3 的核心交互反馈机制
+ *
+ * 什么是 State Layer？
+ * - 在组件上叠加的半透明颜色层
+ * - hover: 8% 不透明度
+ * - focus: 12% 不透明度
+ * - active: 16% 不透明度
+ *
+ * 为什么用 State Layer 而不是改变背景色？
+ * 1. 更自然：像真实的光照变化
+ * 2. 更灵活：可以叠加在任何背景上
+ * 3. 更一致：所有组件使用相同的不透明度
+ *
+ * 实现原理：
+ * - 使用绝对定位的伪元素覆盖整个组件
+ * - background-color: currentColor 继承文字颜色
+ * - pointer-events: none 不影响点击事件
+ *
+ * 企业项目经验：
+ * - State Layer 是 Material 3 的标志性设计
+ * - 比直接改变背景色更有"物理感"
+ * - 使用 currentColor 让 State Layer 自动适配组件颜色
+ */
 
 /* State Layer */
 .md-state-layer {
@@ -26,6 +73,28 @@
   opacity: 0.16;
 }
 
+/* ========================================
+ * Ripple Effect (波纹效果)
+ * ======================================== */
+
+/* Ripple 是 Material Design 的标志性点击反馈效果
+ *
+ * 动画原理：
+ * 1. 初始状态：transform: scale(0)，圆形从点击位置开始
+ * 2. 动画过程：scale(4)，圆形扩大到 4 倍
+ * 3. 同时淡出：opacity: 0.3 → 0
+ * 4. 动画时长：400ms（medium4）
+ *
+ * 为什么用 scale(4)？
+ * - 确保波纹能覆盖整个组件（即使从角落点击）
+ * - 4 倍是经过测试的最佳值
+ *
+ * 企业项目经验：
+ * - Ripple 效果让点击反馈更直观
+ * - 动画时长不能太长（会显得卡顿）也不能太短（看不清）
+ * - 使用 currentColor 让 ripple 自动适配组件颜色
+ */
+
 /* Ripple Effect */
 .md-ripple {
   position: absolute;
@@ -43,6 +112,22 @@
     opacity: 0;
   }
 }
+
+/* ========================================
+ * Elevation Utilities (阴影工具类)
+ * ======================================== */
+
+/* 快速应用 Material 3 的 elevation 级别
+ *
+ * 使用示例：
+ * - <div class="md-elevation-1"> → 轻微阴影（卡片）
+ * - <div class="md-elevation-2"> → 中等阴影（FAB）
+ * - <div class="md-elevation-3"> → 较强阴影（对话框）
+ *
+ * 企业项目经验：
+ * - 工具类让开发更快，不需要每次都写 box-shadow
+ * - 统一的阴影系统让界面层次清晰
+ */
 
 /* Elevation Utilities */
 .md-elevation-0 {
@@ -68,6 +153,28 @@
 .md-elevation-5 {
   box-shadow: var(--md-sys-elevation-level5);
 }
+
+/* ========================================
+ * Transition Utilities (过渡动画工具类)
+ * ======================================== */
+
+/* 快速应用 Material 3 的过渡动画
+ *
+ * 使用示例：
+ * - <div class="md-transition-fade"> → 淡入淡出
+ * - <div class="md-transition-scale"> → 缩放
+ * - <div class="md-transition-slide"> → 滑动
+ *
+ * Vue Transition 集成：
+ * - <Transition name="md-fade"> → 淡入淡出过渡
+ * - <Transition name="md-scale"> → 缩放过渡
+ * - <Transition name="md-slide-up"> → 向上滑入过渡
+ *
+ * 企业项目经验：
+ * - 统一的过渡动画让界面更流畅
+ * - Vue Transition 是实现页面切换动画的标准方式
+ * - 动画时长和缓动函数应该从 Material tokens 中选择
+ */
 
 /* Transition Utilities */
 .md-transition-fade {

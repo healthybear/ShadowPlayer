@@ -1,6 +1,41 @@
+/**
+ * Element Plus Material Design 3 Theme Mapping
+ *
+ * 这个文件的作用：
+ * - 将 Element Plus 的 CSS 变量映射到 Material Design 3 tokens
+ * - 让 Element Plus 组件自动使用 Material 3 的颜色、字体、圆角、阴影
+ * - 深度定制 Element Plus 组件，使其符合 Material 3 风格
+ *
+ * 为什么需要主题映射？
+ * 1. Element Plus 有自己的设计系统（蓝色主题）
+ * 2. 我们想使用 Material Design 3（紫色主题）
+ * 3. 通过覆盖 Element Plus 的 CSS 变量，可以无缝切换主题
+ *
+ * 企业项目经验：
+ * - 使用第三方组件库时，主题定制是必须的
+ * - CSS 变量是主题定制的最佳方式，不需要修改组件源码
+ * - 统一的设计系统让界面更专业、更有品牌感
+ *
+ * @see https://element-plus.org/zh-CN/guide/theming.html
+ */
+
 /* Element Plus Material Design 3 Theme Mapping */
 
 :root {
+  /* ========================================
+   * 颜色映射
+   * ======================================== */
+
+  /* 为什么要映射颜色？
+   * - Element Plus 默认使用蓝色（#409EFF）
+   * - Material 3 使用紫色（#6750A4）
+   * - 通过映射，Element Plus 组件自动使用 Material 3 颜色
+   *
+   * 企业项目经验：
+   * - 主题颜色应该在一个地方定义（material-tokens.css）
+   * - 其他地方通过 CSS 变量引用，保持一致性
+   */
+
   /* 颜色映射 */
   --el-color-primary: var(--md-sys-color-primary);
   --el-color-primary-light-3: var(--md-sys-color-primary-container);
@@ -16,6 +51,20 @@
   --el-color-error: var(--md-sys-color-error);
   --el-color-info: var(--md-sys-color-secondary);
 
+  /* ========================================
+   * 文字颜色映射
+   * ======================================== */
+
+  /* Material 3 的文字颜色系统：
+   * - on-surface: 主要文字（最高对比度）
+   * - on-surface-variant: 次要文字（中等对比度）
+   * - outline: 占位符、禁用文字（低对比度）
+   *
+   * 企业项目经验：
+   * - 文字颜色应该根据背景自动调整，确保可读性
+   * - Material 3 的颜色系统已经考虑了无障碍（WCAG 对比度标准）
+   */
+
   /* 文字颜色 */
   --el-text-color-primary: var(--md-sys-color-on-surface);
   --el-text-color-regular: var(--md-sys-color-on-surface-variant);
@@ -23,10 +72,29 @@
   --el-text-color-placeholder: var(--md-sys-color-outline);
   --el-text-color-disabled: var(--md-sys-color-outline);
 
+  /* ========================================
+   * 背景颜色映射
+   * ======================================== */
+
+  /* Material 3 的背景系统：
+   * - surface: 组件背景（卡片、对话框）
+   * - background: 页面背景
+   * - surface-variant: 次要背景（hover 状态、禁用状态）
+   */
+
   /* 背景颜色 */
   --el-bg-color: var(--md-sys-color-surface);
   --el-bg-color-page: var(--md-sys-color-background);
   --el-bg-color-overlay: var(--md-sys-color-surface-variant);
+
+  /* ========================================
+   * 边框颜色映射
+   * ======================================== */
+
+  /* Material 3 的边框系统：
+   * - outline-variant: 轻微边框（低对比度）
+   * - outline: 明显边框（中等对比度）
+   */
 
   /* 边框颜色 */
   --el-border-color: var(--md-sys-color-outline-variant);
@@ -35,6 +103,17 @@
   --el-border-color-extra-light: var(--md-sys-color-outline-variant);
   --el-border-color-dark: var(--md-sys-color-outline);
   --el-border-color-darker: var(--md-sys-color-outline);
+
+  /* ========================================
+   * 圆角映射
+   * ======================================== */
+
+  /* Material 3 使用更大的圆角（12px），比 Element Plus 默认的 4px 更柔和
+   *
+   * 企业项目经验：
+   * - 圆角大小是品牌视觉的一部分
+   * - Material 3 的大圆角让界面更有亲和力
+   */
 
   /* 圆角 - Material 3 使用更大的圆角 */
   --el-border-radius-base: var(--md-sys-shape-corner-medium);
@@ -49,6 +128,17 @@
   --el-font-size-large: var(--md-sys-typescale-body-large-size);
   --el-font-size-extra-large: var(--md-sys-typescale-title-large-size);
 
+  /* ========================================
+   * 阴影映射
+   * ======================================== */
+
+  /* 使用 Material 3 的 elevation 系统替代 Element Plus 的阴影
+   *
+   * 企业项目经验：
+   * - 统一的阴影系统让界面层次清晰
+   * - Material 3 的阴影值是精心调校的，包含多层阴影以模拟真实光照
+   */
+
   /* 阴影 - 使用 Material elevation */
   --el-box-shadow-light: var(--md-sys-elevation-level1);
   --el-box-shadow: var(--md-sys-elevation-level2);
@@ -58,6 +148,27 @@
   --el-transition-duration: var(--md-sys-motion-duration-short4);
   --el-transition-duration-fast: var(--md-sys-motion-duration-short2);
 }
+
+/* ========================================
+ * Button Material 3 Customization
+ * ======================================== */
+
+/* 为什么要定制按钮？
+ * - Element Plus 默认按钮是方形的，Material 3 使用大圆角
+ * - Element Plus 的 hover 效果是改变背景色，Material 3 使用 state layer（半透明覆盖层）
+ * - Material 3 的按钮有更细致的字重和字间距
+ *
+ * State Layer 是什么？
+ * - Material 3 的交互反馈机制
+ * - hover 时在按钮上叠加一层半透明的颜色（8% 不透明度）
+ * - active 时不透明度增加到 12%
+ * - 比直接改变背景色更自然、更有层次感
+ *
+ * 企业项目经验：
+ * - 交互反馈是用户体验的关键，不要忽视这些"小细节"
+ * - Material 3 的 state layer 让交互更有"物理感"
+ * - 使用 ::before 伪元素实现 state layer，不影响按钮内容
+ */
 
 /* Button Material 3 Customization */
 .el-button {
@@ -144,6 +255,24 @@
   }
 }
 
+/* ========================================
+ * Input Material 3 Customization
+ * ======================================== */
+
+/* 为什么要定制输入框？
+ * - Element Plus 默认输入框有 box-shadow，Material 3 不使用阴影
+ * - Material 3 的输入框使用 1px 边框，focus 时变为 2px
+ * - Material 3 的输入框圆角较小（4px），更接近"文本框"的感觉
+ *
+ * Focus 状态的 2px 边框：
+ * - 提供更强的视觉反馈，让用户知道当前焦点在哪里
+ * - 比改变背景色或添加阴影更清晰
+ *
+ * 企业项目经验：
+ * - 输入框的 focus 状态必须明显，这是无障碍设计的要求
+ * - 去掉 box-shadow 让界面更简洁，符合 Material 3 的"扁平化"风格
+ */
+
 /* Input Material 3 Customization */
 .el-input__wrapper {
   border: 1px solid var(--md-sys-color-outline);
@@ -165,6 +294,21 @@
   background-color: var(--md-sys-color-surface-variant);
   border-color: var(--md-sys-color-outline-variant);
 }
+
+/* ========================================
+ * Progress Material 3 Customization
+ * ======================================== */
+
+/* 为什么要定制进度条？
+ * - Material 3 的进度条使用完全圆形的端点（border-radius: 9999px）
+ * - 轨道使用 surface-variant 颜色（柔和的背景色）
+ * - 进度条使用 primary 颜色（品牌色）
+ *
+ * 企业项目经验：
+ * - 进度条是用户等待时的重要反馈
+ * - 圆形端点比方形端点更柔和、更现代
+ * - 颜色对比要足够，让用户能清楚看到进度
+ */
 
 /* Progress Material 3 Customization */
 .el-progress-bar__outer {
