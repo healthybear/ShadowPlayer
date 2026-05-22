@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import MdTopAppBar from '@/components/material/MdTopAppBar.vue'
+
 defineOptions({ name: 'AppTopNav' })
 
 const props = withDefaults(
   defineProps<{
-    /** 对应 Figma: 8:330 player / 8:341+ history / 8:372 vocabulary / 1:73 home */
     navPreset: 'home' | 'history' | 'vocabulary' | 'player'
   }>(),
   { navPreset: 'home' },
@@ -18,11 +21,11 @@ const links = [
 ] as const
 
 type Visual =
-  | 'primary' /** 蓝 + 下划线 */
-  | 'inactive' /** 灰、无下划线 */
-  | 'player-home' /** 8:330: 灰 + 灰下划线 */
-  | 'player-history' /** 8:330: 仅蓝字 */
-  | 'player-inactive' /** 8:330: 灰字 */
+  | 'primary'
+  | 'inactive'
+  | 'player-home'
+  | 'player-history'
+  | 'player-inactive'
 
 function getVisual(
   key: (typeof links)[number]['key'],
@@ -55,15 +58,19 @@ const linkStates = computed(() => {
     v: getVisual(l.key, p),
   }))
 })
+
+const scrolled = computed(() => props.navPreset !== 'home')
 </script>
 
 <template>
-  <header class="app-top-nav">
-    <div class="app-top-nav__container">
+  <MdTopAppBar :scrolled="scrolled">
+    <template #leading>
       <RouterLink to="/" class="app-top-nav__logo">
         ShadowPlayer
       </RouterLink>
+    </template>
 
+    <template #title>
       <nav class="app-top-nav__menu">
         <RouterLink
           v-for="{ l, v } in linkStates"
@@ -74,112 +81,92 @@ const linkStates = computed(() => {
           {{ l.label }}
         </RouterLink>
       </nav>
+    </template>
 
+    <template #actions>
       <el-avatar
         :size="36"
         src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
         aria-label="账户"
         class="app-top-nav__avatar"
       />
-    </div>
-  </header>
+    </template>
+  </MdTopAppBar>
 </template>
 
-<style scoped lang="scss">
-.app-top-nav {
-  position: fixed;
-  top: 0;
+<style scoped>
+.app-top-nav__logo {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--md-sys-typescale-title-large-size);
+  font-weight: var(--md-sys-typescale-title-large-weight);
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+  letter-spacing: -0.45px;
+}
+
+.app-top-nav__menu {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  gap: 32px;
+  margin-left: 48px;
+}
+
+.app-top-nav__link {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  line-height: 20px;
+  letter-spacing: 0.1px;
+  transition: color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+  padding: 20px 0;
+  position: relative;
+}
+
+.app-top-nav__link--primary {
+  color: var(--md-sys-color-primary);
+}
+
+.app-top-nav__link--primary::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
   left: 0;
   right: 0;
-  z-index: var(--el-index-top);
-  width: 100%;
-  background-color: var(--el-bg-color);
-  border-bottom: 1px solid var(--el-border-color-lighter);
-  box-shadow: 0 1px 2px rgba(243, 244, 246, 0.5);
-  padding-bottom: 1px;
+  height: 2px;
+  background-color: var(--md-sys-color-primary);
+}
 
-  &__container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 48px;
-    padding: 0 32px;
-    box-sizing: border-box;
-  }
+.app-top-nav__link--inactive {
+  color: var(--md-sys-color-on-surface-variant);
+}
 
-  &__logo {
-    display: inline-flex;
-    align-items: center;
-    height: 28px;
-    max-width: 121px;
-    flex-shrink: 0;
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 28px;
-    letter-spacing: -0.45px;
-    color: var(--el-color-primary);
-    text-decoration: none;
-  }
+.app-top-nav__link--player-home {
+  color: var(--md-sys-color-on-surface-variant);
+}
 
-  &__menu {
-    display: flex;
-    align-items: stretch;
-    height: 100%;
-    flex-shrink: 0;
-    gap: 32px;
-  }
+.app-top-nav__link--player-home::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--md-sys-color-on-surface-variant);
+}
 
-  &__link {
-    display: flex;
-    flex-direction: column;
-    text-decoration: none;
-    font-size: var(--el-font-size-base);
-    font-weight: 500;
-    line-height: 20px;
-    letter-spacing: -0.35px;
-    transition: color var(--el-transition-duration);
+.app-top-nav__link--player-history {
+  color: var(--md-sys-color-primary);
+}
 
-    // Primary state: 蓝 + 下划线
-    &--primary {
-      padding-top: 12px;
-      padding-bottom: 14px;
-      color: var(--el-color-primary);
-      border-bottom: 2px solid var(--el-color-primary);
-    }
+.app-top-nav__link--player-inactive {
+  color: var(--md-sys-color-on-surface-variant);
+}
 
-    // Inactive state: 灰、无下划线
-    &--inactive {
-      padding-top: 11.5px;
-      padding-bottom: 12.5px;
-      color: var(--el-text-color-secondary);
-    }
-
-    // Player-home state: 灰 + 灰下划线
-    &--player-home {
-      padding-top: 12px;
-      padding-bottom: 14px;
-      color: var(--el-text-color-secondary);
-      border-bottom: 2px solid var(--el-text-color-secondary);
-    }
-
-    // Player-history state: 仅蓝字
-    &--player-history {
-      padding-top: 11.5px;
-      padding-bottom: 12.5px;
-      color: var(--el-color-primary);
-    }
-
-    // Player-inactive state: 灰字
-    &--player-inactive {
-      padding-top: 11.5px;
-      padding-bottom: 12.5px;
-      color: var(--el-text-color-secondary);
-    }
-  }
-
-  &__avatar {
-    flex-shrink: 0;
-    cursor: pointer;
-  }
+.app-top-nav__avatar {
+  cursor: pointer;
 }
 </style>

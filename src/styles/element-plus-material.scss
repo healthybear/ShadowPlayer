@@ -1,0 +1,183 @@
+/* Element Plus Material Design 3 Theme Mapping */
+
+:root {
+  /* 颜色映射 */
+  --el-color-primary: var(--md-sys-color-primary);
+  --el-color-primary-light-3: var(--md-sys-color-primary-container);
+  --el-color-primary-light-5: var(--md-sys-color-primary-container);
+  --el-color-primary-light-7: var(--md-sys-color-primary-container);
+  --el-color-primary-light-8: var(--md-sys-color-primary-container);
+  --el-color-primary-light-9: var(--md-sys-color-primary-container);
+  --el-color-primary-dark-2: var(--md-sys-color-on-primary-container);
+
+  --el-color-success: #2E7D32;
+  --el-color-warning: #F57C00;
+  --el-color-danger: var(--md-sys-color-error);
+  --el-color-error: var(--md-sys-color-error);
+  --el-color-info: var(--md-sys-color-secondary);
+
+  /* 文字颜色 */
+  --el-text-color-primary: var(--md-sys-color-on-surface);
+  --el-text-color-regular: var(--md-sys-color-on-surface-variant);
+  --el-text-color-secondary: var(--md-sys-color-on-surface-variant);
+  --el-text-color-placeholder: var(--md-sys-color-outline);
+  --el-text-color-disabled: var(--md-sys-color-outline);
+
+  /* 背景颜色 */
+  --el-bg-color: var(--md-sys-color-surface);
+  --el-bg-color-page: var(--md-sys-color-background);
+  --el-bg-color-overlay: var(--md-sys-color-surface-variant);
+
+  /* 边框颜色 */
+  --el-border-color: var(--md-sys-color-outline-variant);
+  --el-border-color-light: var(--md-sys-color-outline-variant);
+  --el-border-color-lighter: var(--md-sys-color-outline-variant);
+  --el-border-color-extra-light: var(--md-sys-color-outline-variant);
+  --el-border-color-dark: var(--md-sys-color-outline);
+  --el-border-color-darker: var(--md-sys-color-outline);
+
+  /* 圆角 - Material 3 使用更大的圆角 */
+  --el-border-radius-base: var(--md-sys-shape-corner-medium);
+  --el-border-radius-small: var(--md-sys-shape-corner-small);
+  --el-border-radius-round: var(--md-sys-shape-corner-full);
+  --el-border-radius-circle: 50%;
+
+  /* 字体 */
+  --el-font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --el-font-size-base: var(--md-sys-typescale-body-medium-size);
+  --el-font-size-small: var(--md-sys-typescale-body-small-size);
+  --el-font-size-large: var(--md-sys-typescale-body-large-size);
+  --el-font-size-extra-large: var(--md-sys-typescale-title-large-size);
+
+  /* 阴影 - 使用 Material elevation */
+  --el-box-shadow-light: var(--md-sys-elevation-level1);
+  --el-box-shadow: var(--md-sys-elevation-level2);
+  --el-box-shadow-dark: var(--md-sys-elevation-level3);
+
+  /* 过渡 */
+  --el-transition-duration: var(--md-sys-motion-duration-short4);
+  --el-transition-duration-fast: var(--md-sys-motion-duration-short2);
+}
+
+/* Button Material 3 Customization */
+.el-button {
+  border-radius: var(--md-sys-shape-corner-large);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  letter-spacing: 0.1px;
+  transition: all var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+  position: relative;
+  overflow: hidden;
+
+  &.el-button--primary {
+    background-color: var(--md-sys-color-primary);
+    border-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+
+    &:hover,
+    &:focus {
+      background-color: var(--md-sys-color-primary);
+      border-color: var(--md-sys-color-primary);
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--md-sys-color-on-primary);
+        opacity: 0.08;
+        pointer-events: none;
+      }
+    }
+
+    &:active::before {
+      opacity: 0.12;
+    }
+  }
+
+  &.el-button--default.is-plain {
+    background-color: transparent;
+    border-color: var(--md-sys-color-outline);
+    color: var(--md-sys-color-primary);
+
+    &:hover,
+    &:focus {
+      background-color: transparent;
+      border-color: var(--md-sys-color-outline);
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--md-sys-color-primary);
+        opacity: 0.08;
+        pointer-events: none;
+      }
+    }
+  }
+
+  &.el-button--text {
+    border: none;
+    color: var(--md-sys-color-primary);
+    background-color: transparent;
+
+    &:hover,
+    &:focus {
+      background-color: transparent;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--md-sys-color-primary);
+        opacity: 0.08;
+        pointer-events: none;
+      }
+    }
+  }
+}
+
+/* Input Material 3 Customization */
+.el-input__wrapper {
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  box-shadow: none !important;
+  transition: border var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+
+  &:hover {
+    border-color: var(--md-sys-color-on-surface);
+  }
+
+  &.is-focus {
+    border-width: 2px;
+    border-color: var(--md-sys-color-primary);
+  }
+}
+
+.el-input.is-disabled .el-input__wrapper {
+  background-color: var(--md-sys-color-surface-variant);
+  border-color: var(--md-sys-color-outline-variant);
+}
+
+/* Progress Material 3 Customization */
+.el-progress-bar__outer {
+  background-color: var(--md-sys-color-surface-variant);
+  border-radius: var(--md-sys-shape-corner-full);
+}
+
+.el-progress-bar__inner {
+  background-color: var(--md-sys-color-primary);
+  border-radius: var(--md-sys-shape-corner-full);
+}
+
+.el-progress__text {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-body-small-size);
+}

@@ -10,6 +10,8 @@ import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import 'virtual:uno.css'
 import { VueQueryPlugin } from '@tanstack/vue-query'
+import VueVirtualScroller from 'vue-virtual-scroller'
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 
 import App from './App.vue'
 import router from './router'
@@ -20,6 +22,7 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 app.use(ElementPlus, { locale: zhCn })
 app.use(VueQueryPlugin)
+app.use(VueVirtualScroller)
 app.use(createPinia())
 app.use(router)
 

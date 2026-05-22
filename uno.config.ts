@@ -11,6 +11,33 @@ export default defineConfig({
 
   theme: {
     colors: {
+      // Material Design 3 colors (md- prefix)
+      md: {
+        primary: '#6750A4',
+        'on-primary': '#FFFFFF',
+        'primary-container': '#EADDFF',
+        'on-primary-container': '#21005D',
+        secondary: '#625B71',
+        'on-secondary': '#FFFFFF',
+        'secondary-container': '#E8DEF8',
+        'on-secondary-container': '#1D192B',
+        tertiary: '#7D5260',
+        'on-tertiary': '#FFFFFF',
+        'tertiary-container': '#FFD8E4',
+        'on-tertiary-container': '#31111D',
+        error: '#B3261E',
+        'on-error': '#FFFFFF',
+        'error-container': '#F9DEDC',
+        'on-error-container': '#410E0B',
+        surface: '#FFFBFE',
+        'on-surface': '#1C1B1F',
+        'surface-variant': '#E7E0EC',
+        'on-surface-variant': '#49454F',
+        background: '#FFFBFE',
+        'on-background': '#1C1B1F',
+        outline: '#79747E',
+        'outline-variant': '#CAC4D0',
+      },
       // 主题色阶（对应 --el-color-primary 系列）
       primary: {
         DEFAULT:  '#409EFF',
@@ -77,6 +104,14 @@ export default defineConfig({
     },
 
     borderRadius: {
+      // Material Design 3 shape tokens
+      'md-none': '0px',
+      'md-extra-small': '4px',
+      'md-small': '8px',
+      'md-medium': '12px',
+      'md-large': '16px',
+      'md-extra-large': '28px',
+      'md-full': '9999px',
       // 对应 --el-border-radius 系列
       'sm':     '2px',
       'base':   '4px',
@@ -112,10 +147,40 @@ export default defineConfig({
     },
 
     transitionDuration: {
+      // Material Design 3 motion durations
+      'md-short1': '50ms',
+      'md-short2': '100ms',
+      'md-short3': '150ms',
+      'md-short4': '200ms',
+      'md-medium1': '250ms',
+      'md-medium2': '300ms',
+      'md-medium3': '350ms',
+      'md-medium4': '400ms',
+      'md-long1': '450ms',
+      'md-long2': '500ms',
+      'md-long3': '550ms',
+      'md-long4': '600ms',
       // 对应 --el-transition-duration 系列
       'el':      '0.3s',
       'el-fast': '0.2s',
     },
+
+    transitionTimingFunction: {
+      // Material Design 3 easing curves
+      'md-standard': 'cubic-bezier(0.4, 0, 0.2, 1)',
+      'md-emphasized': 'cubic-bezier(0.2, 0, 0, 1)',
+      'md-emphasized-decelerate': 'cubic-bezier(0.05, 0.7, 0.1, 1)',
+      'md-emphasized-accelerate': 'cubic-bezier(0.3, 0, 0.8, 0.15)',
+    },
+  },
+
+  // Material Design 3 breakpoints
+  breakpoints: {
+    'md-compact': '0px',
+    'md-medium': '600px',
+    'md-expanded': '840px',
+    'md-large': '1200px',
+    'md-extra-large': '1600px',
   },
 
   shortcuts: {

@@ -1,0 +1,118 @@
+/* Material Design 3 Utilities */
+
+/* State Layer */
+.md-state-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.md-state-layer--hover:hover .md-state-layer {
+  opacity: 0.08;
+}
+
+.md-state-layer--focus:focus .md-state-layer {
+  opacity: 0.12;
+}
+
+.md-state-layer--active:active .md-state-layer {
+  opacity: 0.16;
+}
+
+/* Ripple Effect */
+.md-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background-color: currentColor;
+  opacity: 0.3;
+  transform: scale(0);
+  animation: md-ripple-animation var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-standard);
+  pointer-events: none;
+}
+
+@keyframes md-ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Elevation Utilities */
+.md-elevation-0 {
+  box-shadow: var(--md-sys-elevation-level0);
+}
+
+.md-elevation-1 {
+  box-shadow: var(--md-sys-elevation-level1);
+}
+
+.md-elevation-2 {
+  box-shadow: var(--md-sys-elevation-level2);
+}
+
+.md-elevation-3 {
+  box-shadow: var(--md-sys-elevation-level3);
+}
+
+.md-elevation-4 {
+  box-shadow: var(--md-sys-elevation-level4);
+}
+
+.md-elevation-5 {
+  box-shadow: var(--md-sys-elevation-level5);
+}
+
+/* Transition Utilities */
+.md-transition-fade {
+  transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.md-transition-scale {
+  transition: transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.md-transition-slide {
+  transition: transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+/* Vue Transition Classes */
+.md-fade-enter-active,
+.md-fade-leave-active {
+  transition: opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.md-fade-enter-from,
+.md-fade-leave-to {
+  opacity: 0;
+}
+
+.md-scale-enter-active,
+.md-scale-leave-active {
+  transition: transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+              opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.md-scale-enter-from,
+.md-scale-leave-to {
+  transform: scale(0.8);
+  opacity: 0;
+}
+
+.md-slide-up-enter-active,
+.md-slide-up-leave-active {
+  transition: transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+              opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.md-slide-up-enter-from,
+.md-slide-up-leave-to {
+  transform: translateY(20px);
+  opacity: 0;
+}
