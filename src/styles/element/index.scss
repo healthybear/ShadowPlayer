@@ -2,7 +2,7 @@
 @import '../material-tokens.css';
 
 /* Import Element Plus Material theme mapping */
-@import '../element-plus-material.scss';
+@use '../element-plus-material.scss';
 
 /* Import Material utilities */
 @import '../material-utilities.css';
