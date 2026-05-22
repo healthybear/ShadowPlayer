@@ -1,3 +1,18 @@
+<!--
+  History Page (历史记录页面)
+
+  页面结构：
+  - 页面标题 + 清空按钮
+  - 搜索框
+  - 历史记录网格
+  - 分页器
+
+  响应式布局：
+  - 移动端：单列
+  - 平板：2 列
+  - 桌面：3 列
+-->
+
 <script setup lang="ts">
 import HistoryItem from '@/components/history/HistoryItem.vue'
 
@@ -67,6 +82,7 @@ const handleItemClick = (id: string) => {
         </el-input>
       </div>
 
+      <!-- 响应式网格布局 -->
       <div class="history-page__list">
         <HistoryItem
           v-for="item in items"
@@ -129,6 +145,7 @@ const handleItemClick = (id: string) => {
   margin-top: 16px;
 }
 
+/* 响应式网格：1/2/3 列 */
 .history-page__list {
   margin-top: 16px;
   display: grid;

@@ -1,3 +1,19 @@
+<!--
+  Player Page (播放器页面)
+
+  页面结构：
+  - 视频区域（左侧/上方）
+    - 视频播放器
+    - 字幕覆盖层
+    - 单词弹窗
+    - 播放控制条
+  - 字幕列表（右侧/下方）
+
+  响应式布局：
+  - 移动端：上下布局（视频在上，字幕在下）
+  - 桌面：左右布局（视频在左，字幕在右）
+-->
+
 <script setup lang="ts">
 import { ref } from 'vue'
 import VideoPlayer from '@/components/player/VideoPlayer.vue'
@@ -12,12 +28,14 @@ import { figmaDesignAssets } from '@/config/figmaDesignAssets'
 
 const poster = figmaDesignAssets.player.poster
 
+// 播放器状态
 const playing = ref(false)
 const currentTime = ref(765)
 const duration = ref(1472)
 const currentSubtitle = ref('I was chasing a shadow that didn\'t exist.')
 const showWordPopup = ref(true)
 
+// 模拟字幕数据
 const subtitles = [
   {
     id: '1',
@@ -62,7 +80,9 @@ const handleSubtitleSelect = (id: string) => {
   <div class="player-page">
     <AppTopNav nav-preset="player" />
 
+    <!-- 主容器：响应式 flex 布局 -->
     <div class="player-page__container">
+      <!-- 视频区域 -->
       <div class="player-page__video-section">
         <div class="player-page__video-wrapper">
           <VideoPlayer :src="poster" />
@@ -86,6 +106,7 @@ const handleSubtitleSelect = (id: string) => {
         />
       </div>
 
+      <!-- 字幕列表侧边栏 -->
       <aside class="player-page__sidebar">
         <SubtitleList
           :subtitles="subtitles"
@@ -98,6 +119,7 @@ const handleSubtitleSelect = (id: string) => {
 </template>
 
 <style scoped>
+/* 全屏布局，固定高度 */
 .player-page {
   display: flex;
   flex-direction: column;
@@ -106,6 +128,7 @@ const handleSubtitleSelect = (id: string) => {
   background-color: var(--md-sys-color-background);
 }
 
+/* 响应式容器：移动端上下布局，桌面左右布局 */
 .player-page__container {
   display: flex;
   flex: 1;
@@ -138,6 +161,7 @@ const handleSubtitleSelect = (id: string) => {
   overflow: hidden;
 }
 
+/* 侧边栏：移动端在底部，桌面在右侧 */
 .player-page__sidebar {
   display: flex;
   width: 100%;

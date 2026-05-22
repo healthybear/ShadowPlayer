@@ -1,3 +1,16 @@
+<!--
+  Vocabulary Page (词汇表页面)
+
+  页面结构：
+  - 页面标题 + 统计标签 + 操作按钮
+  - 词汇卡片网格
+  - 导出按钮
+
+  响应式布局：
+  - 移动端：单列
+  - 平板及以上：2 列
+-->
+
 <script setup lang="ts">
 import VocabCard from '@/components/vocabulary/VocabCard.vue'
 
@@ -59,6 +72,7 @@ const handleCardClick = (id: string) => {
         </div>
       </div>
 
+      <!-- 词汇卡片网格 -->
       <div class="vocabulary-page__grid">
         <VocabCard
           v-for="word in words"
@@ -118,6 +132,7 @@ const handleCardClick = (id: string) => {
   gap: 8px;
 }
 
+/* 响应式网格：1/2 列 */
 .vocabulary-page__grid {
   display: grid;
   grid-template-columns: 1fr;

@@ -1,9 +1,23 @@
+<!--
+  Home Page (首页)
+
+  页面结构：
+  - 上传卡片（主要操作）
+  - 最近播放列表（快速访问）
+
+  响应式布局：
+  - 移动端：单列
+  - 平板：2 列
+  - 桌面：3 列
+-->
+
 <script setup lang="ts">
 import UploadCard from '@/components/home/UploadCard.vue'
 import RecentItem from '@/components/home/RecentItem.vue'
 
 defineOptions({ name: 'HomePageView' })
 
+// 模拟数据，实际应该从 API 获取
 const recent = [
   {
     id: '1',
@@ -58,6 +72,7 @@ const handleVideoClick = (id: string) => {
           </RouterLink>
         </div>
 
+        <!-- Grid 布局，响应式列数 -->
         <div class="home-page__recent-list">
           <RecentItem
             v-for="item in recent"
@@ -80,6 +95,9 @@ const handleVideoClick = (id: string) => {
   background-color: var(--md-sys-color-background);
 }
 
+/* 响应式容器宽度
+ * Material Design 3 断点：600px, 840px, 1200px
+ */
 .home-page__main {
   max-width: 100%;
   margin: 0 auto;
@@ -134,6 +152,11 @@ const handleVideoClick = (id: string) => {
   opacity: 0.8;
 }
 
+/* 响应式 Grid 布局
+ * 移动端：1 列
+ * 平板：2 列
+ * 桌面：3 列
+ */
 .home-page__recent-list {
   display: grid;
   grid-template-columns: 1fr;
