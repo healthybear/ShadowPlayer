@@ -1,3 +1,25 @@
+<!--
+  Subtitle List Item Component (字幕列表项组件)
+
+  这是虚拟滚动列表中的单个字幕项。
+
+  显示内容：
+  - 时间戳（如 "00:01:23"）
+  - 原文字幕
+  - 翻译字幕
+
+  交互效果：
+  - 点击跳转到对应时间
+  - Ripple 效果
+  - State Layer（hover）
+  - Active 状态高亮
+
+  企业项目经验：
+  - 列表项组件应该尽量简单，避免复杂计算
+  - 虚拟滚动会频繁创建/销毁组件，性能很重要
+  - 不要在列表项中使用 watch、computed（除非必要）
+-->
+
 <template>
   <div
     class="subtitle-list-item"
@@ -46,6 +68,7 @@ const handleClick = (event: MouseEvent) => {
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
 }
 
+/* State Layer 效果 */
 .subtitle-list-item:hover::before {
   content: '';
   position: absolute;
@@ -58,6 +81,12 @@ const handleClick = (event: MouseEvent) => {
   pointer-events: none;
 }
 
+/* Active 状态：背景色 + 左侧强调条
+ * 企业项目经验：
+ * - 当前播放的字幕要明显高亮
+ * - 左侧强调条是常见的设计模式
+ * - padding-left 调整确保内容对齐
+ */
 .subtitle-list-item--active {
   background-color: var(--md-sys-color-secondary-container);
   border-left: 4px solid var(--md-sys-color-secondary);
