@@ -1,8 +1,8 @@
-/* Import Material Design 3 tokens first */
-@import '../material-tokens.css';
-
 /* Import Element Plus Material theme mapping */
 @use '../element-plus-material.scss';
+
+/* Import Material Design 3 tokens first */
+@import '../material-tokens.css';
 
 /* Import Material utilities */
 @import '../material-utilities.css';
