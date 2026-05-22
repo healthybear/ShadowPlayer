@@ -1,3 +1,19 @@
+<!--
+  Upload Card Component (上传卡片组件)
+
+  首页的上传入口，引导用户上传视频。
+
+  设计特点：
+  - 大图标 + 文字说明，清晰的视觉引导
+  - FAB 按钮，符合 Material Design 规范
+  - 较高的 elevation，突出重要性
+
+  企业项目经验：
+  - 首页的主要操作应该醒目
+  - 空状态（无内容时）要引导用户行动
+  - FAB 适合用于主要操作
+-->
+
 <template>
   <MdCard
     :elevation="2"
@@ -12,6 +28,11 @@
         支持 MP4、MKV、AVI 等格式
       </div>
     </div>
+    <!-- FAB 按钮放在卡片右下角
+         企业项目经验：
+         - FAB 的位置应该固定，用户容易找到
+         - 右下角是 Material Design 的标准位置
+    -->
     <MdFab
       class="upload-card__fab"
       @click="emit('upload')"

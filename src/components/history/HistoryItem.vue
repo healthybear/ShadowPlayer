@@ -1,3 +1,18 @@
+<!--
+  History Item Component (历史记录项组件)
+
+  显示观看历史，包含缩略图、标题、日期、观看进度。
+
+  特殊功能：
+  - 进度条覆盖在缩略图底部
+  - 显示观看进度百分比
+
+  企业项目经验：
+  - 历史记录要显示进度，方便用户继续观看
+  - 进度条放在缩略图上是常见设计
+  - 视觉上更紧凑，信息密度更高
+-->
+
 <template>
   <MdCard
     :elevation="1"
@@ -6,6 +21,12 @@
   >
     <div class="history-item__thumbnail">
       <img :src="thumbnail" :alt="title" />
+      <!-- 进度条覆盖层
+           企业项目经验：
+           - 进度条放在缩略图底部，不占用额外空间
+           - 用户一眼就能看到观看进度
+           - 这是视频应用的标准设计
+      -->
       <div class="history-item__progress-overlay">
         <el-progress
           :percentage="progress"
@@ -31,7 +52,7 @@ interface Props {
   thumbnail: string
   title: string
   date: string
-  progress: number
+  progress: number // 0-100
 }
 
 defineProps<Props>()
@@ -75,6 +96,7 @@ const handleClick = (event: MouseEvent) => {
   object-fit: cover;
 }
 
+/* 进度条覆盖层，绝对定位在缩略图底部 */
 .history-item__progress-overlay {
   position: absolute;
   bottom: 0;

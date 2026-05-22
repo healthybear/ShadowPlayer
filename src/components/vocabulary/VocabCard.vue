@@ -1,3 +1,18 @@
+<!--
+  Vocabulary Card Component (词汇卡片组件)
+
+  显示单词、释义、例句。
+
+  使用场景：
+  - 词汇表页面
+  - 点击查看详情或练习
+
+  企业项目经验：
+  - 词汇卡片是语言学习应用的核心组件
+  - 例句用斜体 + 背景色区分
+  - 简洁的设计让用户专注于学习
+-->
+
 <template>
   <MdCard
     :elevation="1"
@@ -6,6 +21,11 @@
   >
     <div class="vocab-card__word">{{ word }}</div>
     <div class="vocab-card__definition">{{ definition }}</div>
+    <!-- v-if 条件渲染，只在有例句时显示
+         企业项目经验：
+         - 不是所有单词都有例句
+         - 条件渲染避免空白区域
+    -->
     <div v-if="example" class="vocab-card__example">
       {{ example }}
     </div>
@@ -64,6 +84,12 @@ const handleClick = (event: MouseEvent) => {
   line-height: 1.5;
 }
 
+/* 例句样式：斜体 + 背景色
+ * 企业项目经验：
+ * - 例句要和释义区分开
+ * - 斜体是引用文本的标准样式
+ * - 背景色让例句更突出
+ */
 .vocab-card__example {
   font-size: var(--md-sys-typescale-body-small-size);
   color: var(--md-sys-color-on-surface-variant);
