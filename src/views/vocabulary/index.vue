@@ -12,155 +12,251 @@
 -->
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import VocabCard from '@/components/vocabulary/VocabCard.vue'
-import { useVocabularyStore } from '@/stores/vocabulary'
+import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { db } from '@/db/schema'
+import type { VocabularyItem } from '@/db/schema'
 
 defineOptions({ name: 'VocabularyPageView' })
 
-// 使用 Pinia store 管理状态
-// 企业项目经验：组件只负责展示和交互，业务逻辑和数据管理交给 store
-const vocabularyStore = useVocabularyStore()
+const router = useRouter()
+const vocabulary = ref<VocabularyItem[]>([])
+const loading = ref(true)
+const searchKeyword = ref('')
 
-// 组件挂载时加载数据
-// 企业项目经验：使用 onMounted 而不是立即执行，确保组件已经渲染
-onMounted(() => {
-  vocabularyStore.fetchWords()
+async function loadVocabulary() {
+  loading.value = true
+  try {
+    vocabulary.value = await db.vocabulary
+      .orderBy('createdAt')
+      .reverse()
+      .toArray()
+  } catch (error) {
+    console.error('Failed to load vocabulary:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+const filteredVocabulary = computed(() => {
+  if (!searchKeyword.value) return vocabulary.value
+
+  const keyword = searchKeyword.value.toLowerCase()
+  return vocabulary.value.filter(item =>
+    item.word.toLowerCase().includes(keyword) ||
+    item.translation?.toLowerCase().includes(keyword)
+  )
 })
 
-const handleCardClick = (id: string) => {
-  console.log('Vocab card clicked:', id)
+function handleWordClick(item: VocabularyItem) {
+  if (item.videoId) {
+    router.push(`/player/${item.videoId}?time=${item.timestamp}`)
+  }
 }
+
+function formatDate(timestamp: number): string {
+  const date = new Date(timestamp)
+  return date.toLocaleDateString()
+}
+
+onMounted(() => {
+  loadVocabulary()
+})
 </script>
 
 <template>
   <div class="vocabulary-page">
-    <AppTopNav nav-preset="vocabulary" />
+    <div class="vocabulary-container">
+      <div class="vocabulary-header">
+        <h1>Vocabulary</h1>
+        <p class="subtitle">Words you've collected while learning</p>
+      </div>
 
-    <main class="vocabulary-page__main">
-      <div class="vocabulary-page__header">
-        <div class="vocabulary-page__header-left">
-          <h1 class="vocabulary-page__title">My Vocabulary</h1>
-          <el-tag type="primary" effect="light">
-            Total {{ vocabularyStore.totalWords }} Words
-          </el-tag>
-        </div>
-        <div class="vocabulary-page__header-actions">
-          <el-button>
-            <el-icon class="mr-1"><Search /></el-icon>
-            Search
-          </el-button>
-          <el-button>
-            <el-icon class="mr-1"><Filter /></el-icon>
-            Filter
-          </el-button>
+      <div class="vocabulary-toolbar">
+        <el-input
+          v-model="searchKeyword"
+          placeholder="Search words..."
+          clearable
+        >
+          <template #prefix>
+            <el-icon><i-ep-search /></el-icon>
+          </template>
+        </el-input>
+
+        <div class="stats">
+          <span>{{ vocabulary.length }} words</span>
         </div>
       </div>
 
-      <!-- 加载状态 -->
-      <div v-if="vocabularyStore.loading" class="vocabulary-page__loading">
-        <el-icon class="is-loading" :size="32">
-          <Loading />
-        </el-icon>
+      <div v-if="loading" class="loading-state">
+        <el-icon class="is-loading" :size="32"><i-ep-loading /></el-icon>
         <p>Loading vocabulary...</p>
       </div>
 
-      <!-- 错误状态 -->
-      <el-alert
-        v-else-if="vocabularyStore.error"
-        type="error"
-        :title="vocabularyStore.error"
-        show-icon
-        :closable="false"
-      />
-
-      <!-- 词汇卡片网格 -->
-      <div v-else class="vocabulary-page__grid">
-        <VocabCard
-          v-for="word in vocabularyStore.sortedWords"
-          :key="word.id"
-          :word="word.word"
-          :definition="word.definition"
-          :example="word.example"
-          @click="handleCardClick(word.id)"
+      <div v-else-if="filteredVocabulary.length === 0" class="empty-state">
+        <el-empty
+          :description="searchKeyword ? 'No matching words found' : 'No vocabulary yet. Start collecting words while watching videos!'"
         />
       </div>
 
-      <div class="vocabulary-page__export">
-        <el-button type="primary" size="large">
-          <el-icon class="mr-2"><Download /></el-icon>
-          Export to CSV
-        </el-button>
+      <div v-else class="vocabulary-list">
+        <div
+          v-for="item in filteredVocabulary"
+          :key="item.id"
+          class="vocabulary-item"
+          :class="{ clickable: item.videoId }"
+          @click="handleWordClick(item)"
+        >
+          <div class="item-main">
+            <h3 class="word">{{ item.word }}</h3>
+            <p v-if="item.translation" class="translation">{{ item.translation }}</p>
+            <p v-if="item.context" class="context">"{{ item.context }}"</p>
+          </div>
+
+          <div class="item-meta">
+            <span class="date">{{ formatDate(item.createdAt) }}</span>
+            <el-icon v-if="item.videoId" class="link-icon"><i-ep-video-play /></el-icon>
+          </div>
+        </div>
       </div>
-    </main>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .vocabulary-page {
-  min-height: 100vh;
-  background-color: var(--md-sys-color-background);
+  min-height: calc(100vh - 64px);
+  background: var(--el-bg-color);
 }
 
-.vocabulary-page__main {
-  max-width: 960px;
+.vocabulary-container {
+  max-width: 900px;
   margin: 0 auto;
-  padding: 80px 16px 96px;
+  padding: 48px 24px;
 }
 
-.vocabulary-page__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+.vocabulary-header {
   margin-bottom: 32px;
 }
 
-.vocabulary-page__header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.vocabulary-header h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
 }
 
-.vocabulary-page__title {
+.subtitle {
   margin: 0;
-  font-size: var(--md-sys-typescale-headline-large-size);
-  font-weight: var(--md-sys-typescale-headline-large-weight);
-  color: var(--md-sys-color-on-surface);
+  font-size: 16px;
+  color: var(--el-text-color-secondary);
 }
 
-.vocabulary-page__header-actions {
+.vocabulary-toolbar {
   display: flex;
-  gap: 8px;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
-/* 加载和错误状态 */
-.vocabulary-page__loading {
+.vocabulary-toolbar .el-input {
+  flex: 1;
+  max-width: 400px;
+}
+
+.stats {
+  font-size: 14px;
+  color: var(--el-text-color-secondary);
+}
+
+.loading-state,
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 48px 0;
-  color: var(--md-sys-color-on-surface-variant);
-}
-
-/* 响应式网格：1/2 列 */
-.vocabulary-page__grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-@media (min-width: 600px) {
-  .vocabulary-page__grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.vocabulary-page__export {
-  display: flex;
   justify-content: center;
-  margin-top: 32px;
-  padding-top: 16px;
+  padding: 64px 24px;
+  color: var(--el-text-color-secondary);
+}
+
+.loading-state .el-icon {
+  margin-bottom: 16px;
+}
+
+.vocabulary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vocabulary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px;
+  border: 1px solid var(--el-border-color);
+  border-radius: 8px;
+  background: var(--el-bg-color);
+  transition: all 0.3s;
+}
+
+.vocabulary-item.clickable {
+  cursor: pointer;
+}
+
+.vocabulary-item.clickable:hover {
+  border-color: var(--el-color-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.item-main {
+  flex: 1;
+}
+
+.word {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.translation {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: var(--el-text-color-regular);
+}
+
+.context {
+  margin: 0;
+  font-size: 14px;
+  color: var(--el-text-color-secondary);
+  font-style: italic;
+}
+
+.item-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.date {
+  font-size: 12px;
+  color: var(--el-text-color-placeholder);
+}
+
+.link-icon {
+  color: var(--el-color-primary);
+}
+
+@media (max-width: 768px) {
+  .vocabulary-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .vocabulary-toolbar .el-input {
+    max-width: none;
+  }
 }
 </style>
