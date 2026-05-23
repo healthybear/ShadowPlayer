@@ -14,38 +14,38 @@
 -->
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import HistoryItem from '@/components/history/HistoryItem.vue'
+import { useHistoryStore } from '@/stores/history'
 
 defineOptions({ name: 'HistoryPageView' })
 
-import { figmaDesignAssets } from '@/config/figmaDesignAssets'
+// 使用 Pinia store 管理历史记录
+const historyStore = useHistoryStore()
 
-const items = [
-  {
-    id: '1',
-    title: 'Business_English_Module_04_Negotiations.mp4',
-    date: '2 hours ago',
-    progress: 42,
-    thumb: figmaDesignAssets.history.thumb1,
-  },
-  {
-    id: '2',
-    title: 'Interview_Tips_Confidence_Workshop.mkv',
-    date: 'Yesterday',
-    progress: 85,
-    thumb: figmaDesignAssets.history.thumb2,
-  },
-  {
-    id: '3',
-    title: 'Daily_Phrases_Part_01_Greetings.mp4',
-    date: '3 days ago',
-    progress: 100,
-    thumb: figmaDesignAssets.history.thumb3,
-  },
-] as const
+// 组件挂载时加载数据
+onMounted(() => {
+  historyStore.fetchHistory()
+})
 
 const handleItemClick = (id: string) => {
   console.log('History item clicked:', id)
+}
+
+const handleClearHistory = async () => {
+  // 企业项目经验：危险操作应该有二次确认
+  if (confirm('Are you sure you want to clear all history?')) {
+    try {
+      await historyStore.clearHistory()
+    }
+    catch (err) {
+      console.error('Failed to clear history:', err)
+    }
+  }
+}
+
+const handlePageChange = (page: number) => {
+  historyStore.fetchHistory(page)
 }
 </script>
 
@@ -61,7 +61,7 @@ const handleItemClick = (id: string) => {
             Manage your recently watched learning videos
           </p>
         </div>
-        <el-button plain type="danger">
+        <el-button plain type="danger" @click="handleClearHistory">
           <el-icon class="mr-2">
             <Delete />
           </el-icon>
@@ -82,10 +82,27 @@ const handleItemClick = (id: string) => {
         </el-input>
       </div>
 
+      <!-- 加载状态 -->
+      <div v-if="historyStore.loading" class="history-page__loading">
+        <el-icon class="is-loading" :size="32">
+          <Loading />
+        </el-icon>
+        <p>Loading history...</p>
+      </div>
+
+      <!-- 错误状态 -->
+      <el-alert
+        v-else-if="historyStore.error"
+        type="error"
+        :title="historyStore.error"
+        show-icon
+        :closable="false"
+      />
+
       <!-- 响应式网格布局 -->
-      <div class="history-page__list">
+      <div v-else class="history-page__list">
         <HistoryItem
-          v-for="item in items"
+          v-for="item in historyStore.items"
           :key="item.id"
           :thumbnail="item.thumb"
           :title="item.title"
@@ -96,10 +113,13 @@ const handleItemClick = (id: string) => {
       </div>
 
       <el-pagination
+        v-if="!historyStore.loading && historyStore.total > 0"
         class="history-page__pagination"
         layout="prev, pager, next"
-        :total="120"
-        :page-size="10"
+        :total="historyStore.total"
+        :page-size="historyStore.pageSize"
+        :current-page="historyStore.currentPage"
+        @current-change="handlePageChange"
       />
     </main>
   </div>
@@ -143,6 +163,16 @@ const handleItemClick = (id: string) => {
 
 .history-page__search {
   margin-top: 16px;
+}
+
+/* 加载和错误状态 */
+.history-page__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 0;
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 /* 响应式网格：1/2/3 列 */

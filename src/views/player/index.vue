@@ -15,64 +15,37 @@
 -->
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted } from 'vue'
 import VideoPlayer from '@/components/player/VideoPlayer.vue'
 import SubtitleOverlay from '@/components/player/SubtitleOverlay.vue'
 import PlayerControls from '@/components/player/PlayerControls.vue'
 import WordPopup from '@/components/player/WordPopup.vue'
 import SubtitleList from '@/components/player/SubtitleList.vue'
+import { usePlayerStore } from '@/stores/player'
 
 defineOptions({ name: 'PlayerPageView' })
 
-import { figmaDesignAssets } from '@/config/figmaDesignAssets'
+// 使用 Pinia store 管理播放器状态
+// 企业项目经验：播放器状态复杂，使用 store 统一管理
+const playerStore = usePlayerStore()
 
-const poster = figmaDesignAssets.player.poster
-
-// 播放器状态
-const playing = ref(false)
-const currentTime = ref(765)
-const duration = ref(1472)
-const currentSubtitle = ref('I was chasing a shadow that didn\'t exist.')
-const showWordPopup = ref(true)
-
-// 模拟字幕数据
-const subtitles = [
-  {
-    id: '1',
-    time: '01:04',
-    text: 'Sometimes the hardest part is not letting go.',
-    translation: '有时候最难的部分是不是放手。',
-  },
-  {
-    id: '2',
-    time: '12:45',
-    text: 'I was chasing a shadow that didn\'t exist.',
-    translation: '我当时在追逐一个并不存在的影子。',
-  },
-  {
-    id: '3',
-    time: '13:12',
-    text: 'Reality has a way of catching up to you.',
-    translation: '现实总是有办法追上你。',
-  },
-  {
-    id: '4',
-    time: '13:45',
-    text: 'And when it does, you\'ll need to be ready.',
-    translation: '当它真的发生时，你需要做好准备。',
-  },
-]
+// 组件挂载时加载视频数据
+// 实际项目中 videoId 应该从路由参数获取
+onMounted(() => {
+  const videoId = 'demo-video-1'
+  playerStore.loadVideo(videoId)
+})
 
 const handleTogglePlay = () => {
-  playing.value = !playing.value
+  playerStore.togglePlay()
 }
 
 const handleSeek = (time: number) => {
-  currentTime.value = time
+  playerStore.seek(time)
 }
 
 const handleSubtitleSelect = (id: string) => {
-  console.log('Subtitle selected:', id)
+  playerStore.selectSubtitle(id)
 }
 </script>
 
@@ -85,22 +58,25 @@ const handleSubtitleSelect = (id: string) => {
       <!-- 视频区域 -->
       <div class="player-page__video-section">
         <div class="player-page__video-wrapper">
-          <VideoPlayer :src="poster" />
+          <VideoPlayer :src="playerStore.poster" />
 
-          <SubtitleOverlay :text="currentSubtitle" />
+          <SubtitleOverlay
+            v-if="playerStore.currentSubtitle"
+            :text="playerStore.currentSubtitle.text"
+          />
 
           <WordPopup
-            :visible="showWordPopup"
-            word="shadow"
-            pronunciation="/ˈʃædoʊ/"
-            definition="n. 影子；阴影；幻象"
+            :visible="playerStore.showWordPopup"
+            :word="playerStore.selectedWord.word"
+            :pronunciation="playerStore.selectedWord.pronunciation"
+            :definition="playerStore.selectedWord.definition"
           />
         </div>
 
         <PlayerControls
-          :playing="playing"
-          :current-time="currentTime"
-          :duration="duration"
+          :playing="playerStore.playing"
+          :current-time="playerStore.currentTime"
+          :duration="playerStore.duration"
           @toggle-play="handleTogglePlay"
           @seek="handleSeek"
         />
@@ -109,8 +85,8 @@ const handleSubtitleSelect = (id: string) => {
       <!-- 字幕列表侧边栏 -->
       <aside class="player-page__sidebar">
         <SubtitleList
-          :subtitles="subtitles"
-          :active-id="subtitles[1].id"
+          :subtitles="playerStore.subtitles"
+          :active-id="playerStore.activeSubtitleId"
           @select="handleSubtitleSelect"
         />
       </aside>

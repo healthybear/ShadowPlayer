@@ -23,6 +23,11 @@ const router = createRouter({
       name: 'vocabulary',
       component: () => import('@/views/vocabulary/index.vue'),
     },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: () => import('@/views/settings/index.vue'),
+    },
   ],
 })
 

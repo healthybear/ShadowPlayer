@@ -1,24 +1,49 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { Menu } from '@element-plus/icons-vue'
 import MdTopAppBar from '@/components/material/MdTopAppBar.vue'
 
 defineOptions({ name: 'AppTopNav' })
 
 const props = withDefaults(
   defineProps<{
-    navPreset: 'home' | 'history' | 'vocabulary' | 'player'
+    navPreset: 'home' | 'history' | 'vocabulary' | 'player' | 'settings'
   }>(),
   { navPreset: 'home' },
 )
 
 const route = useRoute()
+const router = useRouter()
 
 const links = [
   { to: '/', key: 'home' as const, label: 'Home' },
   { to: '/history', key: 'history' as const, label: 'History' },
   { to: '/vocabulary', key: 'vocabulary' as const, label: 'Vocabulary' },
 ] as const
+
+// 菜单项类型定义
+type MenuItem = {
+  label: string
+  icon: string
+  path: string
+  type?: never
+} | {
+  type: 'divider'
+  label?: never
+  icon?: never
+  path?: never
+}
+
+// 菜单项
+const menuItems: MenuItem[] = [
+  { label: 'Home', icon: 'House', path: '/' },
+  { label: 'History', icon: 'Clock', path: '/history' },
+  { label: 'Vocabulary', icon: 'Document', path: '/vocabulary' },
+  { label: 'Player', icon: 'VideoPlay', path: '/player' },
+  { type: 'divider' },
+  { label: 'Settings', icon: 'Setting', path: '/settings' },
+]
 
 type Visual =
   | 'primary'
@@ -44,6 +69,7 @@ function getVisual(
     home: path === '/' ? 'home' : null,
     history: path === '/history' ? 'history' : null,
     vocabulary: path === '/vocabulary' ? 'vocabulary' : null,
+    settings: null, // settings 页面不高亮导航链接
   }
 
   const want = presetActive[props.navPreset as Exclude<typeof props.navPreset, 'player'>]
@@ -60,6 +86,11 @@ const linkStates = computed(() => {
 })
 
 const scrolled = computed(() => props.navPreset !== 'home')
+
+// 处理菜单项点击
+const handleMenuCommand = (path: string) => {
+  router.push(path)
+}
 </script>
 
 <template>
@@ -84,12 +115,21 @@ const scrolled = computed(() => props.navPreset !== 'home')
     </template>
 
     <template #actions>
-      <el-avatar
-        :size="36"
-        src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
-        aria-label="账户"
-        class="app-top-nav__avatar"
-      />
+      <!-- 菜单按钮 -->
+      <el-dropdown trigger="click" @command="handleMenuCommand">
+        <el-button circle :icon="Menu" class="app-top-nav__menu-button" />
+        <template #dropdown>
+          <el-dropdown-menu>
+            <template v-for="(item, index) in menuItems" :key="index">
+              <el-dropdown-item v-if="item.type === 'divider'" divided />
+              <el-dropdown-item v-else :command="item.path">
+                <el-icon><component :is="item.icon" /></el-icon>
+                <span>{{ item.label }}</span>
+              </el-dropdown-item>
+            </template>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </template>
   </MdTopAppBar>
 </template>
@@ -110,7 +150,7 @@ const scrolled = computed(() => props.navPreset !== 'home')
   align-items: center;
   height: 100%;
   gap: 32px;
-  margin-left: 48px;
+  margin-left: 24px;
 }
 
 .app-top-nav__link {
@@ -166,7 +206,15 @@ const scrolled = computed(() => props.navPreset !== 'home')
   color: var(--md-sys-color-on-surface-variant);
 }
 
-.app-top-nav__avatar {
-  cursor: pointer;
+/* 菜单按钮样式 */
+.app-top-nav__menu-button {
+  background-color: transparent;
+  border: none;
+  color: var(--md-sys-color-on-surface);
+  transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.app-top-nav__menu-button:hover {
+  background-color: var(--md-sys-color-surface-variant);
 }
 </style>

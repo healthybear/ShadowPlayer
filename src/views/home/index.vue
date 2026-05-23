@@ -12,38 +12,31 @@
 -->
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import UploadCard from '@/components/home/UploadCard.vue'
 import RecentItem from '@/components/home/RecentItem.vue'
+import { useHistoryStore } from '@/stores/history'
+import type { VideoItem } from '@/api/types'
 
 defineOptions({ name: 'HomePageView' })
 
-// 模拟数据，实际应该从 API 获取
-const recent = [
-  {
-    id: '1',
-    title: 'Blade Runner 2049 - Language Study',
-    duration: '2h 43m',
-    date: '2 hours ago',
-    thumb: '',
-    progress: 75,
-  },
-  {
-    id: '2',
-    title: 'Italian Cinema: La Dolce Vita',
-    duration: '2h 54m',
-    date: 'Yesterday',
-    thumb: '',
-    progress: 30,
-  },
-  {
-    id: '3',
-    title: 'French News - Daily Briefing',
-    duration: '25m',
-    date: '3 days ago',
-    thumb: '',
-    progress: 95,
-  },
-] as const
+// 使用 history store 获取最近播放数据
+// 企业项目经验：首页和历史页面共享同一个数据源，避免重复请求
+const historyStore = useHistoryStore()
+
+const recentVideos = ref<VideoItem[]>([])
+const loading = ref(false)
+
+// 组件挂载时加载最近播放数据
+onMounted(async () => {
+  loading.value = true
+  try {
+    recentVideos.value = await historyStore.fetchRecent(3)
+  }
+  finally {
+    loading.value = false
+  }
+})
 
 const handleUpload = () => {
   console.log('Upload clicked')
@@ -72,10 +65,17 @@ const handleVideoClick = (id: string) => {
           </RouterLink>
         </div>
 
+        <!-- 加载状态 -->
+        <div v-if="loading" class="home-page__loading">
+          <el-icon class="is-loading" :size="24">
+            <Loading />
+          </el-icon>
+        </div>
+
         <!-- Grid 布局，响应式列数 -->
-        <div class="home-page__recent-list">
+        <div v-else class="home-page__recent-list">
           <RecentItem
-            v-for="item in recent"
+            v-for="item in recentVideos"
             :key="item.id"
             :thumbnail="item.thumb"
             :title="item.title"
@@ -150,6 +150,14 @@ const handleVideoClick = (id: string) => {
 
 .home-page__view-all:hover {
   opacity: 0.8;
+}
+
+/* 加载状态 */
+.home-page__loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 /* 响应式 Grid 布局

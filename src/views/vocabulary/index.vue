@@ -12,36 +12,21 @@
 -->
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import VocabCard from '@/components/vocabulary/VocabCard.vue'
+import { useVocabularyStore } from '@/stores/vocabulary'
 
 defineOptions({ name: 'VocabularyPageView' })
 
-const words = [
-  {
-    id: '1',
-    word: 'ubiquitous',
-    definition: '无所不在的，普遍存在的',
-    example: 'Smartphones have become ubiquitous in modern society.',
-  },
-  {
-    id: '2',
-    word: 'meticulous',
-    definition: '严谨的，极精细的',
-    example: 'She was meticulous in her research methodology.',
-  },
-  {
-    id: '3',
-    word: 'paradigm',
-    definition: '范例，典范',
-    example: 'This discovery represents a paradigm shift in physics.',
-  },
-  {
-    id: '4',
-    word: 'eloquent',
-    definition: '雄辩的，口才流利的',
-    example: 'The speaker gave an eloquent presentation.',
-  },
-] as const
+// 使用 Pinia store 管理状态
+// 企业项目经验：组件只负责展示和交互，业务逻辑和数据管理交给 store
+const vocabularyStore = useVocabularyStore()
+
+// 组件挂载时加载数据
+// 企业项目经验：使用 onMounted 而不是立即执行，确保组件已经渲染
+onMounted(() => {
+  vocabularyStore.fetchWords()
+})
 
 const handleCardClick = (id: string) => {
   console.log('Vocab card clicked:', id)
@@ -57,7 +42,7 @@ const handleCardClick = (id: string) => {
         <div class="vocabulary-page__header-left">
           <h1 class="vocabulary-page__title">My Vocabulary</h1>
           <el-tag type="primary" effect="light">
-            Total 23 Words
+            Total {{ vocabularyStore.totalWords }} Words
           </el-tag>
         </div>
         <div class="vocabulary-page__header-actions">
@@ -72,10 +57,27 @@ const handleCardClick = (id: string) => {
         </div>
       </div>
 
+      <!-- 加载状态 -->
+      <div v-if="vocabularyStore.loading" class="vocabulary-page__loading">
+        <el-icon class="is-loading" :size="32">
+          <Loading />
+        </el-icon>
+        <p>Loading vocabulary...</p>
+      </div>
+
+      <!-- 错误状态 -->
+      <el-alert
+        v-else-if="vocabularyStore.error"
+        type="error"
+        :title="vocabularyStore.error"
+        show-icon
+        :closable="false"
+      />
+
       <!-- 词汇卡片网格 -->
-      <div class="vocabulary-page__grid">
+      <div v-else class="vocabulary-page__grid">
         <VocabCard
-          v-for="word in words"
+          v-for="word in vocabularyStore.sortedWords"
           :key="word.id"
           :word="word.word"
           :definition="word.definition"
@@ -130,6 +132,16 @@ const handleCardClick = (id: string) => {
 .vocabulary-page__header-actions {
   display: flex;
   gap: 8px;
+}
+
+/* 加载和错误状态 */
+.vocabulary-page__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 0;
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 /* 响应式网格：1/2 列 */
