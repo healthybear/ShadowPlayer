@@ -45,3 +45,6 @@ global-packages.txt
 
 # Codex
 .codex/
+
+# cursor
+.cursor
