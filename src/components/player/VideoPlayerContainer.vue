@@ -203,8 +203,11 @@ onUnmounted(() => {
 <style scoped>
 .video-player-container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
+  max-height: 100%;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .loading-state,
@@ -255,10 +258,20 @@ onUnmounted(() => {
   background: #000;
   border-radius: 8px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
 }
 
 .video-wrapper {
   position: relative;
   width: 100%;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* 限制视频区域的最大高度，为控制条留出空间 */
+  max-height: calc(100vh - 64px - 80px - 48px); /* 视口高度 - 导航栏 - 控制条 - padding */
 }
 </style>

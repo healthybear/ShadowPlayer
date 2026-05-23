@@ -34,7 +34,7 @@ const videoId = route.params.id as string
 
 <style scoped>
 .player-page {
-  min-height: 100vh;
+  min-height: calc(100vh - 64px); /* 减去导航栏高度 */
   background-color: var(--md-sys-color-background);
   display: flex;
   flex-direction: column;
@@ -46,11 +46,15 @@ const videoId = route.params.id as string
   align-items: center;
   justify-content: center;
   padding: 24px;
+  /* 限制最大高度，确保视频不会超出视口 */
+  max-height: calc(100vh - 64px);
+  overflow: hidden;
 }
 
 @media (max-width: 768px) {
   .player-page__main {
     padding: 16px;
+    max-height: calc(100vh - 64px);
   }
 }
 </style>

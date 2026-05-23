@@ -85,14 +85,21 @@ defineExpose({
 .video-player {
   position: relative;
   width: 100%;
+  height: 100%;
   background-color: #000;
   border-radius: var(--md-sys-shape-corner-medium);
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .video-player__video {
-  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
   height: auto;
   display: block;
+  object-fit: contain; /* 保持宽高比，完整显示视频 */
 }
 </style>
