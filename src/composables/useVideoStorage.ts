@@ -76,10 +76,33 @@ export function useVideoStorage() {
 
     if (video.storageType === 'file-handle' && video.fileHandle) {
       try {
+        // 检查文件访问权限
+        const permission = await video.fileHandle.queryPermission({ mode: 'read' })
+
+        if (permission === 'denied') {
+          throw new Error('File access permission denied. Please re-upload the video.')
+        }
+
+        // 如果权限是 'prompt'，请求用户授权
+        if (permission === 'prompt') {
+          const newPermission = await video.fileHandle.requestPermission({ mode: 'read' })
+          if (newPermission === 'denied') {
+            throw new Error('File access permission denied. Please re-upload the video.')
+          }
+        }
+
+        // 权限已授予，读取文件
         const file = await video.fileHandle.getFile()
         return file
       } catch (error) {
         console.error('Failed to access file handle:', error)
+
+        // 如果是权限错误，给出更友好的提示
+        if (error instanceof Error && error.message.includes('permission')) {
+          throw error
+        }
+
+        // 其他错误（文件不存在、网络驱动器断开等）
         throw new Error('Cannot access video file. The file may have been moved, deleted, or is on a disconnected network drive. Please re-upload the video.')
       }
     }
