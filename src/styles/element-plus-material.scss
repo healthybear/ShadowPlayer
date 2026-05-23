@@ -325,3 +325,37 @@
   color: var(--md-sys-color-on-surface-variant);
   font-size: var(--md-sys-typescale-body-small-size);
 }
+
+/* ========================================
+ * MessageBox Material 3 Customization
+ * ======================================== */
+
+/* MessageBox (对话框) 定制 */
+.el-message-box {
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  padding: 24px;
+
+  .el-message-box__header {
+    padding: 0 0 16px 0;
+  }
+
+  .el-message-box__title {
+    font-size: var(--md-sys-typescale-headline-small-size);
+    font-weight: var(--md-sys-typescale-headline-small-weight);
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .el-message-box__content {
+    padding: 0 0 24px 0;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: var(--md-sys-typescale-body-medium-size);
+    line-height: 1.5;
+  }
+
+  .el-message-box__btns {
+    padding: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+}
