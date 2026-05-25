@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { ElEmpty } from 'element-plus'
+import { ElEmpty, ElIcon } from 'element-plus'
+import { Loading } from '@element-plus/icons-vue'
 import VideoCard from './VideoCard.vue'
 import { useVideoStorage } from '@/composables/useVideoStorage'
 import { db } from '@/db/schema'
@@ -98,7 +99,7 @@ defineExpose({
 <template>
   <div class="video-list">
     <div v-if="loading" class="loading">
-      <el-icon class="is-loading"><i-ep-loading /></el-icon>
+      <el-icon class="is-loading"><Loading /></el-icon>
       <p>Loading videos...</p>
     </div>
 

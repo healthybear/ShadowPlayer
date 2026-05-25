@@ -26,39 +26,10 @@ function handleDrop(event: DragEvent) {
 
 async function processFile(file: File) {
   try {
-    // 尝试使用 File System Access API 获取文件引用
-    let fileHandle: FileSystemFileHandle | undefined
+    // 直接使用传入的 file，不再调用 showOpenFilePicker
+    // File System Access API 需要在用户手势中直接调用，这里已经有 file 了
+    const video = await uploadVideo(file, undefined)
 
-    if ('showOpenFilePicker' in window) {
-      try {
-        const [handle] = await window.showOpenFilePicker({
-          types: [{
-            description: 'Video files',
-            accept: { 'video/*': ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv'] }
-          }],
-          multiple: false
-        })
-        fileHandle = handle
-        const handleFile = await handle.getFile()
-        const video = await uploadVideo(handleFile, fileHandle)
-
-        ElMessage.success({
-          message: 'Upload successful!',
-          duration: 2000
-        })
-
-        setTimeout(() => {
-          router.push(`/player/${video.id}`)
-        }, 500)
-        return
-      } catch (err) {
-        // 用户取消或不支持，继续使用原始 file
-        console.warn('File System Access API failed, using blob storage:', err)
-      }
-    }
-
-    // 降级方案：保存完整文件内容
-    const video = await uploadVideo(file)
     ElMessage.success({
       message: 'Upload successful!',
       duration: 2000

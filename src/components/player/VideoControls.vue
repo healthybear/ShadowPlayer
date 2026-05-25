@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+
 interface Props {
   isPlaying: boolean
   currentTime: number
@@ -8,6 +10,11 @@ interface Props {
   playbackRate: number
   subtitleVisible: boolean
   hasSubtitle: boolean
+  loopEnabled: boolean
+  loopStart: number
+  loopEnd: number
+  loopCount: number
+  currentLoop: number
 }
 
 defineProps<Props>()
@@ -20,9 +27,19 @@ const emit = defineEmits<{
   'set-playback-rate': [rate: number]
   'toggle-fullscreen': []
   'toggle-subtitle': []
+  'toggle-loop': []
+  'set-loop-count': [count: number]
 }>()
 
 const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2]
+const LOOP_COUNTS = [
+  { label: '∞ Infinite', value: 0 },
+  { label: '3 times', value: 3 },
+  { label: '5 times', value: 5 },
+  { label: '10 times', value: 10 },
+]
+
+const showLoopMenu = ref(false)
 
 function formatTime(seconds: number): string {
   if (!isFinite(seconds)) return '0:00'
@@ -36,10 +53,36 @@ function formatTime(seconds: number): string {
   }
   return `${minutes}:${secs.toString().padStart(2, '0')}`
 }
+
+/**
+ * 格式化循环计数显示
+ *
+ * 企业项目经验：用户友好的文本显示
+ * - 无限循环：显示 "Loop 3/∞"
+ * - 有限循环：显示 "Loop 2/5"
+ * - 使用 ∞ 符号比 "infinite" 更简洁
+ */
+function formatLoopCount(current: number, total: number): string {
+  if (total === 0) {
+    return `Loop ${current}/∞`
+  }
+  return `Loop ${current}/${total}`
+}
+
 </script>
 
 <template>
   <div class="video-controls">
+    <!-- Loop Indicator (显示在进度条上方) -->
+    <div v-if="loopEnabled" class="loop-indicator">
+      <span class="loop-indicator__text">
+        🔁 {{ formatTime(loopStart) }} - {{ formatTime(loopEnd) }}
+      </span>
+      <span class="loop-indicator__count">
+        {{ formatLoopCount(currentLoop, loopCount) }}
+      </span>
+    </div>
+
     <div class="controls-top">
       <el-slider
         :model-value="currentTime"
@@ -106,6 +149,31 @@ function formatTime(seconds: number): string {
           @click="emit('toggle-subtitle')"
         />
 
+        <!-- Loop Toggle Button with Settings Menu -->
+        <el-dropdown
+          trigger="click"
+          @command="emit('set-loop-count', $event)"
+          @visible-change="showLoopMenu = $event"
+        >
+          <el-button
+            icon="RefreshRight"
+            circle
+            :type="loopEnabled ? 'primary' : 'default'"
+            @click.stop="emit('toggle-loop')"
+          />
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item
+                v-for="option in LOOP_COUNTS"
+                :key="option.value"
+                :command="option.value"
+              >
+                {{ option.label }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+
         <el-button
           icon="FullScreen"
           circle
@@ -121,6 +189,47 @@ function formatTime(seconds: number): string {
   background: rgba(0, 0, 0, 0.8);
   color: white;
   padding: 8px 16px;
+}
+
+/* Loop Indicator (循环状态指示器)
+ * 企业项目经验：状态指示器的设计原则
+ * - 位置：显示在进度条上方，不遮挡重要内容
+ * - 颜色：使用 Material Design 3 的 primary 色系，表示"激活状态"
+ * - 信息：显示循环区间时间和当前循环次数
+ * - 动画：淡入淡出，不要突然出现/消失
+ */
+.loop-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  margin-bottom: 4px;
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  border-radius: var(--md-sys-shape-corner-small);
+  font-size: 12px;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loop-indicator__text {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.loop-indicator__count {
+  font-weight: 500;
 }
 
 .controls-top {

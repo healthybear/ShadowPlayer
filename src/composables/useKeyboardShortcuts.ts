@@ -11,6 +11,7 @@ export interface KeyboardShortcutHandlers {
   onToggleSubtitle?: () => void
   onDecreaseSpeed?: () => void
   onIncreaseSpeed?: () => void
+  onToggleLoop?: () => void
 }
 
 export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers) {
@@ -65,6 +66,11 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers) {
       case '.':
         event.preventDefault()
         handlers.onIncreaseSpeed?.()
+        break
+      case 'l':
+      case 'L':
+        event.preventDefault()
+        handlers.onToggleLoop?.()
         break
     }
   }

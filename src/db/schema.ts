@@ -38,10 +38,22 @@ export interface PlaybackProgress {
   completed: boolean
 }
 
+export interface VocabularyItem {
+  id: string
+  word: string
+  translation?: string
+  pronunciation?: string
+  definition?: string
+  videoId?: string
+  subtitleId?: string
+  createdAt: number
+}
+
 export class ShadowPlayerDB extends Dexie {
   videos!: EntityTable<Video, 'id'>
   subtitles!: EntityTable<Subtitle, 'id'>
   progress!: EntityTable<PlaybackProgress, 'videoId'>
+  vocabulary!: EntityTable<VocabularyItem, 'id'>
 
   constructor() {
     super('ShadowPlayerDB')
@@ -49,6 +61,12 @@ export class ShadowPlayerDB extends Dexie {
       videos: 'id, uploadedAt, lastPlayedAt',
       subtitles: 'id, videoId, uploadedAt',
       progress: 'videoId, lastPlayedAt'
+    })
+    this.version(2).stores({
+      videos: 'id, uploadedAt, lastPlayedAt',
+      subtitles: 'id, videoId, uploadedAt',
+      progress: 'videoId, lastPlayedAt',
+      vocabulary: 'id, word, videoId, createdAt'
     })
   }
 }

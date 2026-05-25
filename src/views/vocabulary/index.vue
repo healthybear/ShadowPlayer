@@ -14,6 +14,8 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElInput, ElIcon, ElEmpty } from 'element-plus'
+import { Search, Loading, VideoPlay } from '@element-plus/icons-vue'
 import { db } from '@/db/schema'
 import type { VocabularyItem } from '@/db/schema'
 
@@ -79,7 +81,7 @@ onMounted(() => {
           clearable
         >
           <template #prefix>
-            <el-icon><i-ep-search /></el-icon>
+            <el-icon><Search /></el-icon>
           </template>
         </el-input>
 
@@ -89,7 +91,7 @@ onMounted(() => {
       </div>
 
       <div v-if="loading" class="loading-state">
-        <el-icon class="is-loading" :size="32"><i-ep-loading /></el-icon>
+        <el-icon class="is-loading" :size="32"><Loading /></el-icon>
         <p>Loading vocabulary...</p>
       </div>
 
@@ -115,7 +117,7 @@ onMounted(() => {
 
           <div class="item-meta">
             <span class="date">{{ formatDate(item.createdAt) }}</span>
-            <el-icon v-if="item.videoId" class="link-icon"><i-ep-video-play /></el-icon>
+            <el-icon v-if="item.videoId" class="link-icon"><VideoPlay /></el-icon>
           </div>
         </div>
       </div>

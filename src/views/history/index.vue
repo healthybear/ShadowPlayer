@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElIcon, ElEmpty } from 'element-plus'
+import { Loading } from '@element-plus/icons-vue'
 import { db } from '@/db/schema'
 import type { Video } from '@/db/schema'
 
@@ -85,7 +87,7 @@ onMounted(() => {
       </div>
 
       <div v-if="loading" class="loading-state">
-        <el-icon class="is-loading" :size="32"><i-ep-loading /></el-icon>
+        <el-icon class="is-loading" :size="32"><Loading /></el-icon>
         <p>Loading history...</p>
       </div>
 
