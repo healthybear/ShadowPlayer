@@ -5,10 +5,14 @@ export function parseTimestamp(timestamp: string): number {
 
   if (parts.length === 3) {
     const [h, m, s] = parts.map(Number)
-    return h * 3600 + m * 60 + s
+    if (h !== undefined && m !== undefined && s !== undefined) {
+      return h * 3600 + m * 60 + s
+    }
   } else if (parts.length === 2) {
     const [m, s] = parts.map(Number)
-    return m * 60 + s
+    if (m !== undefined && s !== undefined) {
+      return m * 60 + s
+    }
   }
 
   return 0
@@ -22,14 +26,19 @@ export function parseSRT(content: string): SubtitleEntry[] {
     const lines = block.trim().split('\n')
     if (lines.length < 3) continue
 
-    const index = parseInt(lines[0])
+    const indexStr = lines[0]
+    if (!indexStr) continue
+    const index = parseInt(indexStr)
     if (isNaN(index)) continue
 
     const timeLine = lines[1]
+    if (!timeLine) continue
     const match = timeLine.match(/(\S+)\s*-->\s*(\S+)/)
     if (!match) continue
 
-    const [, start, end] = match
+    const start = match[1]
+    const end = match[2]
+    if (!start || !end) continue
     const text = lines.slice(2).join('\n')
 
     entries.push({
@@ -54,17 +63,29 @@ export function parseVTT(content: string): SubtitleEntry[] {
   let i = 1
 
   while (i < lines.length) {
-    const line = lines[i].trim()
+    const currentLine = lines[i]
+    if (!currentLine) {
+      i++
+      continue
+    }
+    const line = currentLine.trim()
 
     if (line.includes('-->')) {
       const match = line.match(/(\S+)\s*-->\s*(\S+)/)
       if (match) {
-        const [, start, end] = match
+        const start = match[1]
+        const end = match[2]
+        if (!start || !end) {
+          i++
+          continue
+        }
         const textLines: string[] = []
 
         i++
-        while (i < lines.length && lines[i].trim() !== '') {
-          textLines.push(lines[i])
+        while (i < lines.length) {
+          const textLine = lines[i]
+          if (!textLine || textLine.trim() === '') break
+          textLines.push(textLine)
           i++
         }
 
@@ -93,6 +114,7 @@ export function findSubtitleAtTime(
   while (left <= right) {
     const mid = Math.floor((left + right) / 2)
     const entry = entries[mid]
+    if (!entry) break
 
     if (currentTime >= entry.startTime && currentTime <= entry.endTime) {
       return entry
@@ -111,6 +133,7 @@ export function validateSubtitleTiming(entries: SubtitleEntry[]): string[] {
 
   for (let i = 0; i < entries.length; i++) {
     const entry = entries[i]
+    if (!entry) continue
 
     if (entry.endTime < entry.startTime) {
       warnings.push(`Entry ${entry.index}: endTime < startTime`)
@@ -120,8 +143,11 @@ export function validateSubtitleTiming(entries: SubtitleEntry[]): string[] {
       warnings.push(`Entry ${entry.index}: negative timestamp`)
     }
 
-    if (i > 0 && entry.startTime < entries[i - 1].startTime) {
-      warnings.push(`Entry ${entry.index}: not in chronological order`)
+    if (i > 0) {
+      const prevEntry = entries[i - 1]
+      if (prevEntry && entry.startTime < prevEntry.startTime) {
+        warnings.push(`Entry ${entry.index}: not in chronological order`)
+      }
     }
   }
 

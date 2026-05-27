@@ -57,9 +57,12 @@ const emit = defineEmits<{
 const { createRipple } = useMaterialRipple()
 
 const handleClick = (event: MouseEvent) => {
-  createRipple(event, event.currentTarget as HTMLElement)
+  const target = event.currentTarget
+  if (!target || !(target instanceof HTMLElement)) return
+
+  createRipple(event, target)
   // 切换选中状态
-  emit('update:selected', !event.currentTarget.classList.contains('md-chip--selected'))
+  emit('update:selected', !target.classList.contains('md-chip--selected'))
 }
 </script>
 

@@ -13,14 +13,20 @@ const fileInputRef = ref<HTMLInputElement | null>(null)
 function handleFileSelect(event: Event) {
   const target = event.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
-    processFile(target.files[0])
+    const file = target.files[0]
+    if (file) {
+      processFile(file)
+    }
   }
 }
 
 function handleDrop(event: DragEvent) {
   dragOver.value = false
   if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
-    processFile(event.dataTransfer.files[0])
+    const file = event.dataTransfer.files[0]
+    if (file) {
+      processFile(file)
+    }
   }
 }
 

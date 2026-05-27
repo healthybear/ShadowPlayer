@@ -21,7 +21,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const videoPlayerRef = ref<InstanceType<typeof VideoPlayer> | null>(null)
-const videoElement = computed(() => videoPlayerRef.value?.videoRef)
+const videoElement = computed(() => videoPlayerRef.value?.videoRef ?? null)
 const videoUrl = ref<string>('')
 const loading = ref(true)
 const error = ref<string>('')
@@ -32,7 +32,7 @@ const subtitleListScrollerRef = ref<any>(null)
 const { getVideo, getVideoBlob, updateLastPlayed } = useVideoStorage()
 const playerControls = useVideoPlayer(videoElement)
 const { currentSubtitle, subtitles, subtitleVisible, toggleSubtitleVisibility, hasSubtitle } = useSubtitle(videoElement, props.videoId)
-const { loadProgress, startTracking } = usePlaybackProgress(props.videoId, videoElement)
+const { loadProgress } = usePlaybackProgress(props.videoId, videoElement)
 
 // Loop playback controls
 const loopControls = useLoopPlayback(videoElement)
@@ -73,9 +73,18 @@ function formatTime(seconds: number): string {
 /**
  * 转换字幕数据格式
  *
+ * 类型思维：使用 index 作为唯一标识
+ * - SubtitleEntry 是值对象，index 是其唯一标识
+ * - 转换为字符串以匹配 SubtitleList 组件的接口（期望 string 类型的 id）
+ *
+ * 为什么不用 UUID？
+ * - SubtitleEntry 不是实体，不需要全局唯一 ID
+ * - index 在单个字幕文件内唯一，足以标识字幕
+ * - 避免生成 UUID 的性能开销（1000 条字幕 = 1000 次生成）
+ *
  * 为什么需要转换？
  * - SubtitleList 组件期望的格式：{ id, time, text, translation }
- * - useSubtitle 返回的格式：SubtitleEntry[] - { id, startTime, endTime, text }
+ * - useSubtitle 返回的格式：SubtitleEntry[] - { index, startTime, endTime, text }
  * - 需要一个适配层来转换数据格式
  *
  * 为什么用 computed？
@@ -90,7 +99,7 @@ function formatTime(seconds: number): string {
  */
 const formattedSubtitles = computed(() => {
   return subtitles.value.map(subtitle => ({
-    id: subtitle.id,
+    id: subtitle.index.toString(), // 使用 index 作为 id，转换为字符串
     time: formatTime(subtitle.startTime),
     text: subtitle.text,
     translation: '', // 当前版本没有翻译，留空
@@ -99,6 +108,10 @@ const formattedSubtitles = computed(() => {
 
 /**
  * 处理字幕列表项点击
+ *
+ * 类型思维：id 是字符串化的 index，需要转回数字
+ * - SubtitleList 传递的 id 是字符串（subtitle.index.toString()）
+ * - 需要转换回数字才能与 SubtitleEntry.index 比较
  *
  * 交互逻辑：
  * 1. 查找被点击的字幕
@@ -117,15 +130,24 @@ const formattedSubtitles = computed(() => {
  * - 如果用户不想循环，可以按 L 键或点击循环按钮关闭
  */
 function handleSubtitleSelect(subtitleId: string) {
-  const subtitle = subtitles.value.find(s => s.id === subtitleId)
+  const targetIndex = parseInt(subtitleId, 10)
+  const subtitle = subtitles.value.find(s => s.index === targetIndex)
   if (!subtitle) return
 
   // 启用循环播放（默认无限循环）
   loopControls.enableLoop(subtitle.startTime, subtitle.endTime, 0)
 
   // 如果视频暂停，开始播放
+  // 状态思维：处理 play() 可能失败的情况
+  // - play() 返回 Promise，可能因浏览器策略被拒绝
+  // - 必须捕获错误，避免未处理的 Promise rejection
   if (!playerControls.isPlaying.value) {
-    playerControls.play()
+    playerControls.play().catch((error) => {
+      // 播放失败（通常是自动播放策略）
+      console.warn('Failed to start playback after subtitle selection:', error)
+      // 可以选择显示提示，但这里静默处理
+      // 因为用户可以手动点击播放按钮
+    })
   }
 }
 
@@ -170,7 +192,8 @@ function handleLoadedMetadata(duration: number) {
     }
   })
 
-  startTracking()
+  // 进度追踪现在自动启动，无需手动调用
+  // usePlaybackProgress 内部使用 watch 自动管理事件监听器
 }
 
 function handleTimeUpdate(time: number) {
@@ -200,14 +223,20 @@ function handleVolumeDown() {
 function handleDecreaseSpeed() {
   const currentIndex = PLAYBACK_RATES.indexOf(playerControls.playbackRate.value)
   if (currentIndex > 0) {
-    playerControls.setPlaybackRate(PLAYBACK_RATES[currentIndex - 1])
+    const newRate = PLAYBACK_RATES[currentIndex - 1]
+    if (newRate !== undefined) {
+      playerControls.setPlaybackRate(newRate)
+    }
   }
 }
 
 function handleIncreaseSpeed() {
   const currentIndex = PLAYBACK_RATES.indexOf(playerControls.playbackRate.value)
   if (currentIndex < PLAYBACK_RATES.length - 1) {
-    playerControls.setPlaybackRate(PLAYBACK_RATES[currentIndex + 1])
+    const newRate = PLAYBACK_RATES[currentIndex + 1]
+    if (newRate !== undefined) {
+      playerControls.setPlaybackRate(newRate)
+    }
   }
 }
 
@@ -270,7 +299,8 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  // 清理 Object URL，释放内存
+  // 只清理 Object URL
+  // 事件监听器由 useVideoPlayer 和 usePlaybackProgress 的 watch 自动清理
   if (videoUrl.value) {
     URL.revokeObjectURL(videoUrl.value)
   }
@@ -341,7 +371,7 @@ onUnmounted(() => {
         v-if="hasSubtitle"
         ref="subtitleListScrollerRef"
         :subtitles="formattedSubtitles"
-        :active-id="currentSubtitle?.id || ''"
+        :active-id="currentSubtitle?.index.toString() || ''"
         @select="handleSubtitleSelect"
         @scroll="onUserScroll"
       />

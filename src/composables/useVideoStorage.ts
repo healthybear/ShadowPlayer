@@ -77,7 +77,10 @@ export function useVideoStorage() {
     if (video.storageType === 'file-handle' && video.fileHandle) {
       try {
         // 检查文件访问权限
-        const permission = await video.fileHandle.queryPermission({ mode: 'read' })
+        // 注意：queryPermission 和 requestPermission 是 File System Access API 的方法
+        // TypeScript 类型定义可能不完整，使用 any 断言
+        const handle = video.fileHandle as any
+        const permission = await handle.queryPermission({ mode: 'read' })
 
         if (permission === 'denied') {
           throw new Error('File access permission denied. Please re-upload the video.')
@@ -85,7 +88,7 @@ export function useVideoStorage() {
 
         // 如果权限是 'prompt'，请求用户授权
         if (permission === 'prompt') {
-          const newPermission = await video.fileHandle.requestPermission({ mode: 'read' })
+          const newPermission = await handle.requestPermission({ mode: 'read' })
           if (newPermission === 'denied') {
             throw new Error('File access permission denied. Please re-upload the video.')
           }

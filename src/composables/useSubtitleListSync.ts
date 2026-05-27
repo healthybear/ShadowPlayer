@@ -50,19 +50,28 @@ export function useSubtitleListSync(options: SubtitleListSyncOptions) {
   /**
    * 当前字幕在列表中的索引
    *
+   * 类型思维：直接使用 index 字段
+   * - SubtitleEntry.index 就是数组索引（假设字幕按顺序排列）
+   * - 但为了健壮性，仍然使用 findIndex 验证
+   * - 如果字幕文件格式错误（index 不连续），findIndex 能正确处理
+   *
    * 为什么使用 computed？
    * - 当 currentSubtitle 或 subtitles 变化时，自动重新计算
    * - 避免手动维护索引状态
    * - computed 有缓存，只在依赖变化时重新计算
    *
+   * 性能考虑：
+   * - findIndex 是 O(n) 操作
+   * - 但字幕列表通常不超过 1000 条，性能影响可忽略
+   * - 健壮性优于微优化
+   *
    * 企业项目经验：
-   * - 索引查找是 O(n) 操作，但字幕数量通常不超过 1000 条
    * - computed 的缓存机制确保不会频繁计算
    * - 如果字幕数量超过 10000 条，可以考虑使用 Map 优化查找
    */
   const currentSubtitleIndex = computed(() => {
     if (!currentSubtitle.value) return -1
-    return subtitles.value.findIndex(s => s.id === currentSubtitle.value!.id)
+    return subtitles.value.findIndex(s => s.index === currentSubtitle.value!.index)
   })
 
   /**

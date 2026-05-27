@@ -52,7 +52,8 @@ const filteredVocabulary = computed(() => {
 
 function handleWordClick(item: VocabularyItem) {
   if (item.videoId) {
-    router.push(`/player/${item.videoId}?time=${item.timestamp}`)
+    // 使用 createdAt 而不是 timestamp（VocabularyItem 没有 timestamp 字段）
+    router.push(`/player/${item.videoId}?time=${item.createdAt}`)
   }
 }
 
@@ -112,7 +113,7 @@ onMounted(() => {
           <div class="item-main">
             <h3 class="word">{{ item.word }}</h3>
             <p v-if="item.translation" class="translation">{{ item.translation }}</p>
-            <p v-if="item.context" class="context">"{{ item.context }}"</p>
+            <!-- context 字段不存在于 VocabularyItem schema 中，已移除 -->
           </div>
 
           <div class="item-meta">
