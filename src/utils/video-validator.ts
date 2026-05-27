@@ -24,10 +24,16 @@ export function validateVideoFile(file: File): ValidationResult {
     }
   }
 
-  if (file.type && !SUPPORTED_VIDEO_FORMATS.includes(file.type)) {
-    return {
-      valid: false,
-      error: 'File MIME type does not match extension. The file may be corrupted.'
+  // MIME type check: only validate if type is present
+  // Some files (especially .mkv) may have empty or non-standard MIME types
+  if (file.type && file.type !== '' && !SUPPORTED_VIDEO_FORMATS.includes(file.type)) {
+    // Allow common video MIME type variations
+    const isVideoType = file.type.startsWith('video/')
+    if (!isVideoType) {
+      return {
+        valid: false,
+        error: 'File MIME type does not match extension. The file may be corrupted.'
+      }
     }
   }
 
