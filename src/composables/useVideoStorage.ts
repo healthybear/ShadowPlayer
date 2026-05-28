@@ -32,22 +32,25 @@ export function useVideoStorage() {
 
       const metadata = await extractVideoMetadata(file)
 
-      uploadStage.value = 'Storing file...'
+      uploadStage.value = 'Storing file reference...'
       uploadProgress.value = 60
+
+      // 企业项目经验：
+      // - 大文件不应该存储在 IndexedDB 中
+      // - 只存储文件句柄（引用），不占用存储空间
+      // - 如果没有 fileHandle，说明浏览器不支持 File System Access API
+      if (!fileHandle) {
+        throw new Error('File handle is required. Please use a browser that supports File System Access API.')
+      }
 
       const video: Video = {
         id: uuidv4(),
         filename: file.name,
         size: file.size,
         duration: metadata.duration,
-        storageType: fileHandle ? 'file-handle' : 'blob',
+        storageType: 'file-handle',
+        fileHandle: fileHandle,
         uploadedAt: Date.now()
-      }
-
-      if (fileHandle) {
-        video.fileHandle = fileHandle
-      } else {
-        video.blob = file
       }
 
       uploadProgress.value = 80
@@ -70,10 +73,9 @@ export function useVideoStorage() {
   }
 
   async function getVideoBlob(video: Video): Promise<Blob | null> {
-    if (video.storageType === 'blob' && video.blob) {
-      return video.blob
-    }
-
+    // 企业项目经验：
+    // - 只支持 file-handle 模式，不再支持 blob 模式
+    // - 这样可以避免大文件占用 IndexedDB 存储空间
     if (video.storageType === 'file-handle' && video.fileHandle) {
       try {
         // 检查文件访问权限
@@ -110,7 +112,7 @@ export function useVideoStorage() {
       }
     }
 
-    throw new Error('Video file not found in storage')
+    throw new Error('Video file not found in storage. Please re-upload the video.')
   }
 
   async function getAllVideos(): Promise<Video[]> {

@@ -2,6 +2,7 @@
 // 管理数据的导入、导出和清空
 
 import { db } from './db'
+import { db as mainDb } from '@/db/schema'
 import type { ExportData, StorageStats } from './types'
 
 /**
@@ -133,9 +134,11 @@ export async function importData(file: File, clearExisting = true): Promise<void
  * 企业项目经验：
  * - 危险操作应该有明确的确认机制
  * - 使用事务确保要么全部清空，要么全部保留
+ * - 清理所有数据库中的数据，包括主数据库（videos）和旧数据库
  */
 export async function clearAllData(): Promise<void> {
   try {
+    // 清理旧数据库（shadowplayer_db）
     await db.transaction('rw', [db.vocabulary, db.history, db.playerProgress, db.subtitles], async () => {
       await Promise.all([
         db.vocabulary.clear(),
@@ -145,7 +148,21 @@ export async function clearAllData(): Promise<void> {
       ])
     })
 
-    console.log('All data cleared')
+    // 清理主数据库（ShadowPlayerDB）
+    // 企业项目经验：
+    // - 这里存储了视频文件引用（fileHandle）
+    // - 清理这些数据会释放 IndexedDB 存储空间
+    // - 如果之前错误地存储了 blob，清理后空间会被释放
+    await mainDb.transaction('rw', [mainDb.videos, mainDb.subtitles, mainDb.progress, mainDb.vocabulary], async () => {
+      await Promise.all([
+        mainDb.videos.clear(),
+        mainDb.subtitles.clear(),
+        mainDb.progress.clear(),
+        mainDb.vocabulary.clear(),
+      ])
+    })
+
+    console.log('All data cleared from both databases')
   }
   catch (error) {
     console.error('Failed to clear data:', error)

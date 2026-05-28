@@ -274,6 +274,56 @@ pnpm lint
 
 ---
 
+## 存储策略
+
+### 视频文件存储
+
+**核心原则：只存储文件引用，不存储文件内容**
+
+1. **使用 File System Access API**
+   - 只存储 `FileSystemFileHandle`（文件句柄）
+   - 不存储 `Blob` 或文件内容
+   - 文件句柄是对用户文件系统中文件的引用
+   - 不占用 IndexedDB 存储空间
+
+2. **为什么不存储 Blob？**
+   - 视频文件通常很大（几百 MB 到几 GB）
+   - IndexedDB 有存储限制（通常几 GB）
+   - 存储大文件会导致性能问题和存储空间耗尽
+   - 文件句柄方案更高效、更可靠
+
+3. **浏览器兼容性**
+   - ✅ Chrome 86+
+   - ✅ Edge 86+
+   - ✅ Opera 72+
+   - ❌ Firefox（不支持 File System Access API）
+   - ❌ Safari（不支持 File System Access API）
+
+4. **实现要点**
+   ```typescript
+   // ✅ 正确：只存储文件句柄
+   const video: Video = {
+     id: uuidv4(),
+     filename: file.name,
+     storageType: 'file-handle',
+     fileHandle: fileHandle,  // 只存储引用
+     // ...
+   }
+   
+   // ❌ 错误：不要存储文件内容
+   const video: Video = {
+     blob: file,  // 这会把整个文件存入 IndexedDB！
+   }
+   ```
+
+5. **企业项目经验**
+   - 大文件永远不要存储在浏览器数据库中
+   - 使用文件引用而不是文件内容
+   - File System Access API 是现代 Web 应用处理大文件的标准方案
+   - 如果浏览器不支持，应该明确提示用户，而不是降级到 blob 存储
+
+---
+
 ## 给 Claude 的指示
 
 当你在这个项目中工作时：
@@ -283,3 +333,4 @@ pnpm lint
 3. **解释工程化决策** - 不只是写代码，要说明为什么这样写
 4. **标注最佳实践** - 使用 `// 企业项目经验：...` 标记
 5. **保持一致性** - 遵循已有的代码风格和架构模式
+6. **遵循存储策略** - 大文件只存储引用，不存储内容

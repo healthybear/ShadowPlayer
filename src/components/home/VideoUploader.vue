@@ -32,9 +32,38 @@ function handleDrop(event: DragEvent) {
 
 async function processFile(file: File) {
   try {
-    // 直接使用传入的 file，不再调用 showOpenFilePicker
-    // File System Access API 需要在用户手势中直接调用，这里已经有 file 了
-    const video = await uploadVideo(file, undefined)
+    // 检查是否支持 File System Access API
+    const { isFileSystemAccessSupported } = useVideoStorage()
+
+    let fileHandle: FileSystemFileHandle | undefined
+
+    if (isFileSystemAccessSupported()) {
+      // 支持 File System Access API，获取文件句柄
+      // 企业项目经验：
+      // - File System Access API 只存储文件引用，不占用存储空间
+      // - 需要在用户手势中调用 showOpenFilePicker
+      try {
+        const [handle] = await window.showOpenFilePicker({
+          types: [{
+            description: 'Video files',
+            accept: {
+              'video/*': ['.mp4', '.webm', '.mkv']
+            }
+          }],
+          multiple: false
+        })
+        fileHandle = handle
+      } catch (err) {
+        // 用户取消选择或不支持
+        console.warn('Failed to get file handle:', err)
+        throw new Error('Please select a video file using the file picker')
+      }
+    } else {
+      // 不支持 File System Access API
+      throw new Error('Your browser does not support File System Access API. Please use a modern browser like Chrome, Edge, or Opera.')
+    }
+
+    const video = await uploadVideo(file, fileHandle)
 
     ElMessage.success({
       message: 'Upload successful!',
