@@ -29,9 +29,10 @@ export function useVocabulary() {
    *
    * 流程：
    * 1. 数据验证
-   * 2. 重复检测
-   * 3. 写入数据库
-   * 4. 错误处理
+   * 2. 数据清洗（确保可序列化）
+   * 3. 重复检测
+   * 4. 写入数据库
+   * 5. 错误处理
    *
    * 重复检测规则：
    * - 相同 normalizedWord
@@ -48,6 +49,7 @@ export function useVocabulary() {
    * - 重复检测规则要匹配业务需求
    * - 使用复合索引让查询从 O(n) 降到 O(1)
    * - 数据验证要在写入前完成，不要依赖数据库约束
+   * - IndexedDB 只能存储可序列化的数据，需要清洗
    */
   async function addWord(item: Omit<VocabularyItem, 'id' | 'createdAt'>): Promise<void> {
     loading.value = true
@@ -70,9 +72,16 @@ export function useVocabulary() {
         throw new Error('This word is already in your vocabulary')
       }
 
+      // 数据清洗：确保所有字段都可序列化
+      // 企业项目经验：
+      // - IndexedDB 使用结构化克隆算法，不支持函数、Symbol、DOM 节点等
+      // - 需要将数据转换为纯 JSON 对象
+      // - 使用 JSON.parse(JSON.stringify()) 是最简单的方法
+      const cleanedItem = JSON.parse(JSON.stringify(item))
+
       // 生成 ID 和时间戳
       const newItem: VocabularyItem = {
-        ...item,
+        ...cleanedItem,
         id: crypto.randomUUID(),
         createdAt: Date.now(),
       }
