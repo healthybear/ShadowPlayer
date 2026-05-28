@@ -40,10 +40,12 @@
          - 200px 是经验值，约等于 3-4 个列表项
     -->
     <DynamicScroller
+      ref="scrollerRef"
       :items="subtitles"
       :min-item-size="60"
       :buffer="200"
       class="subtitle-list__scroller"
+      @scroll="handleScroll"
     >
       <template #default="{ item, index, active }">
         <!-- DynamicScrollerItem 是必需的包装器
@@ -72,6 +74,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 import SubtitleListItem from './SubtitleListItem.vue'
 
@@ -93,7 +96,54 @@ withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   select: [id: string]
+  scroll: []
 }>()
+
+// DynamicScroller 的 ref
+// 企业项目经验：
+// - 需要暴露给父组件，让父组件可以调用 scrollToItem() 方法
+// - 这是虚拟滚动的核心 API，用于程序化滚动
+const scrollerRef = ref<InstanceType<typeof DynamicScroller>>()
+
+/**
+ * 处理滚动事件
+ *
+ * 为什么需要这个？
+ * - 用户手动滚动时，需要通知父组件
+ * - 父组件会暂时禁用自动滚动，避免打断用户阅读
+ *
+ * 企业项目经验：
+ * - 滚动事件频繁触发，但这里不需要 debounce
+ * - 因为父组件的 onUserScroll 已经处理了防抖逻辑
+ * - 不要在多个层级重复做防抖，会导致延迟累加
+ */
+function handleScroll() {
+  emit('scroll')
+}
+
+/**
+ * 滚动到指定索引
+ *
+ * 为什么需要这个方法？
+ * - 父组件需要调用这个方法来实现自动滚动
+ * - 直接暴露 DynamicScroller 的 scrollToItem 方法
+ *
+ * 企业项目经验：
+ * - 组件封装时，要暴露必要的命令式 API
+ * - 不是所有操作都能通过 props 实现（如滚动）
+ * - defineExpose 让父组件可以调用子组件的方法
+ */
+function scrollToItem(index: number) {
+  scrollerRef.value?.scrollToItem(index)
+}
+
+// 暴露给父组件
+// 企业项目经验：
+// - 只暴露必要的 API，保持组件封装性
+// - scrollToItem 是唯一需要暴露的方法
+defineExpose({
+  scrollToItem,
+})
 
 // 虚拟滚动的性能对比（1000 条数据）：
 // - 普通渲染：1000 个 DOM 元素，初始渲染 ~2s，滚动卡顿

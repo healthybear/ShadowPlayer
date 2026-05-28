@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { ElMessage, ElButton, ElIcon } from 'element-plus'
+import { useRoute } from 'vue-router'
+import { ElMessage, ElButton, ElIcon, ElDialog } from 'element-plus'
 import { Loading, Warning } from '@element-plus/icons-vue'
 import { useVideoPlayer } from '@/composables/useVideoPlayer'
 import { useSubtitle } from '@/composables/useSubtitle'
@@ -13,12 +14,15 @@ import VideoPlayer from './VideoPlayer.vue'
 import VideoControls from './VideoControls.vue'
 import SubtitleOverlay from './SubtitleOverlay.vue'
 import SubtitleList from './SubtitleList.vue'
+import WordPopup from './WordPopup.vue'
+import SubtitleUploader from './SubtitleUploader.vue'
 
 interface Props {
   videoId: string
 }
 
 const props = defineProps<Props>()
+const route = useRoute()
 
 const videoPlayerRef = ref<InstanceType<typeof VideoPlayer> | null>(null)
 const videoElement = computed(() => videoPlayerRef.value?.videoRef ?? null)
@@ -28,6 +32,64 @@ const error = ref<string>('')
 
 // Subtitle list ref for programmatic scrolling
 const subtitleListScrollerRef = ref<any>(null)
+
+// WordPopup 状态
+const wordPopupVisible = ref(false)
+const selectedWord = ref<{
+  displayText: string
+  lookupText: string
+  normalizedWord: string
+  context: string
+  timestamp: number
+  subtitleIndex: number
+} | null>(null)
+
+// SubtitleUploader 对话框状态
+const subtitleUploadDialogVisible = ref(false)
+
+// 检查路由参数，如果有 upload=subtitle，打开上传对话框
+if (route.query.upload === 'subtitle') {
+  subtitleUploadDialogVisible.value = true
+}
+
+/**
+ * 路由参数：从词汇表跳转回来的目标时间点
+ *
+ * 为什么需要这个？
+ * - 用户从词汇表点击单词，期望跳转到单词出现的视频位置
+ * - 路由参数 time 和 subtitleIndex 用于精确定位
+ *
+ * 跳转优先级规则：
+ * 1. 如果路由中存在 time，优先跳到 time
+ * 2. 如果同时存在 subtitleIndex，用于辅助高亮和列表定位
+ * 3. 如果没有 time，才执行"恢复上次播放进度"
+ *
+ * 为什么要这样做？
+ * - 从词汇表回跳时，用户意图非常明确：回到单词出现的学习场景
+ * - 这时"学习上下文优先级"高于"继续观看进度优先级"
+ * - 如果在 onMounted 就直接 seek，后续 loadedmetadata 或进度恢复逻辑可能会把它覆盖
+ *
+ * 企业项目经验：
+ * - 路由参数要在初始化阶段解析并保存
+ * - 不要在多个地方读取路由参数，容易出现不一致
+ * - 优先级规则要提前定义清楚，写在注释里
+ */
+const routeTime = ref<number | null>(null)
+const routeSubtitleIndex = ref<number | null>(null)
+
+// 解析路由参数
+if (route.query.time) {
+  const time = Number(route.query.time)
+  if (!isNaN(time)) {
+    routeTime.value = time
+  }
+}
+if (route.query.subtitleIndex) {
+  const index = Number(route.query.subtitleIndex)
+  if (!isNaN(index)) {
+    routeSubtitleIndex.value = index
+  }
+}
 
 const { getVideo, getVideoBlob, updateLastPlayed } = useVideoStorage()
 const playerControls = useVideoPlayer(videoElement)
@@ -115,27 +177,27 @@ const formattedSubtitles = computed(() => {
  *
  * 交互逻辑：
  * 1. 查找被点击的字幕
- * 2. 启用循环播放（起点 = 字幕开始时间，终点 = 字幕结束时间）
- * 3. 跳转到字幕开始时间
- * 4. 如果视频暂停，开始播放
+ * 2. 跳转到字幕开始时间
+ * 3. 如果视频暂停，开始播放
+ * 4. 不启用循环播放（让用户自己决定是否循环）
  *
- * 为什么点击字幕就启用循环？
- * - 这是"影子跟读"应用的核心交互
- * - 用户期望：点击字幕 → 循环播放这一句 → 跟读练习
- * - 如果只是跳转不循环，用户需要手动点击循环按钮，体验差
+ * 为什么不自动启用循环？
+ * - 用户点击字幕可能只是想跳转到那个位置
+ * - 不是所有用户都想循环播放
+ * - 如果需要循环，用户可以按 L 键或点击循环按钮
  *
  * 企业项目经验：
- * - 好的交互设计是"一步到位"，减少用户操作步骤
- * - 默认行为应该符合大多数用户的预期
- * - 如果用户不想循环，可以按 L 键或点击循环按钮关闭
+ * - 不要假设用户的意图，让用户自己控制
+ * - 自动启用功能可能会让用户困惑
+ * - 提供快捷键让用户快速启用循环
  */
 function handleSubtitleSelect(subtitleId: string) {
   const targetIndex = parseInt(subtitleId, 10)
   const subtitle = subtitles.value.find(s => s.index === targetIndex)
   if (!subtitle) return
 
-  // 启用循环播放（默认无限循环）
-  loopControls.enableLoop(subtitle.startTime, subtitle.endTime, 0)
+  // 跳转到字幕开始时间
+  playerControls.seek(subtitle.startTime)
 
   // 如果视频暂停，开始播放
   // 状态思维：处理 play() 可能失败的情况
@@ -155,21 +217,38 @@ async function loadVideo() {
   loading.value = true
   error.value = ''
   try {
+    console.log('[VideoPlayerContainer] Loading video:', props.videoId)
+
     const video = await getVideo(props.videoId)
     if (!video) {
       throw new Error('Video not found in database')
     }
+
+    console.log('[VideoPlayerContainer] Video record found:', {
+      id: video.id,
+      filename: video.filename,
+      storageType: video.storageType,
+      hasFileHandle: !!video.fileHandle
+    })
 
     const blob = await getVideoBlob(video)
     if (!blob) {
       throw new Error('Unable to load video file')
     }
 
+    console.log('[VideoPlayerContainer] Blob created:', {
+      size: blob.size,
+      type: blob.type
+    })
+
     videoUrl.value = URL.createObjectURL(blob)
+    console.log('[VideoPlayerContainer] Video URL created:', videoUrl.value.substring(0, 50) + '...')
+
     await updateLastPlayed(props.videoId)
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load video'
     error.value = errorMessage
+    console.error('[VideoPlayerContainer] Load video failed:', err)
     ElMessage.error({
       message: errorMessage,
       duration: 5000
@@ -180,20 +259,67 @@ async function loadVideo() {
 }
 
 function handleLoadedMetadata(duration: number) {
+  console.log('[VideoPlayerContainer] Video metadata loaded, duration:', duration)
   playerControls.duration.value = duration
 
-  loadProgress().then((savedTime) => {
-    if (savedTime > 0 && videoElement.value) {
-      videoElement.value.currentTime = savedTime
-      ElMessage.info({
-        message: `Resuming from ${formatTime(savedTime)}`,
-        duration: 2000
-      })
+  /**
+   * 跳转优先级逻辑
+   *
+   * 1. 如果有路由参数 time（从词汇表跳转回来），优先跳到指定时间
+   * 2. 如果同时有 subtitleIndex，触发字幕列表滚动和高亮
+   * 3. 如果没有 time，才恢复上次播放进度
+   *
+   * 为什么要这样做？
+   * - 从词汇表回跳时，用户意图非常明确：回到单词出现的学习场景
+   * - 这时"学习上下文优先级"高于"继续观看进度优先级"
+   * - 必须在 loadedmetadata 后统一决定 seek 目标，避免多次 seek 冲突
+   * - subtitleIndex 用于辅助高亮和列表定位，提升回跳体验
+   *
+   * 企业项目经验：
+   * - 优先级规则要在一个地方统一处理
+   * - 不要在多个地方 seek，容易出现竞态条件
+   * - 路由参数优先级高于本地状态
+   */
+  if (routeTime.value !== null && videoElement.value) {
+    // 从词汇表跳转回来，跳到指定时间
+    videoElement.value.currentTime = routeTime.value
+
+    // 如果有 subtitleIndex，触发字幕选择（会自动滚动和高亮）
+    if (routeSubtitleIndex.value !== null) {
+      handleSubtitleSelect(routeSubtitleIndex.value.toString())
     }
-  })
+
+    ElMessage.info({
+      message: `Jumping to ${formatTime(routeTime.value)}`,
+      duration: 2000
+    })
+  } else {
+    // 恢复上次播放进度
+    loadProgress().then((savedTime) => {
+      if (savedTime > 0 && videoElement.value) {
+        videoElement.value.currentTime = savedTime
+        ElMessage.info({
+          message: `Resuming from ${formatTime(savedTime)}`,
+          duration: 2000
+        })
+      }
+    })
+  }
 
   // 进度追踪现在自动启动，无需手动调用
   // usePlaybackProgress 内部使用 watch 自动管理事件监听器
+}
+
+/**
+ * 处理视频加载错误
+ */
+function handleVideoError(errorMessage: string) {
+  console.error('[VideoPlayerContainer] Video error:', errorMessage)
+  error.value = errorMessage
+  ElMessage.error({
+    message: errorMessage,
+    duration: 5000
+  })
 }
 
 function handleTimeUpdate(time: number) {
@@ -280,6 +406,82 @@ function handleToggleLoop() {
   }
 }
 
+/**
+ * 处理单词点击
+ *
+ * 流程：
+ * 1. 保存 selectedWord
+ * 2. 打开 WordPopup
+ *
+ * 为什么要保存 selectedWord？
+ * - WordPopup 需要这些信息来查询词典和保存到数据库
+ * - 父组件作为数据中转站，连接 SubtitleOverlay 和 WordPopup
+ *
+ * 企业项目经验：
+ * - 父组件负责协调子组件之间的通信
+ * - 不要让子组件直接通信，容易出现耦合
+ * - 数据流要清晰：SubtitleOverlay -> VideoPlayerContainer -> WordPopup
+ */
+function handleWordClick(payload: {
+  displayText: string
+  lookupText: string
+  normalizedWord: string
+  context: string
+  timestamp: number
+  subtitleIndex: number
+}) {
+  selectedWord.value = payload
+  wordPopupVisible.value = true
+}
+
+/**
+ * 处理弹窗关闭
+ */
+function handlePopupClose() {
+  wordPopupVisible.value = false
+}
+
+/**
+ * 处理单词添加成功
+ *
+ * 流程：
+ * 1. 关闭弹窗
+ *
+ * 为什么不显示 Toast？
+ * - WordPopup 内部已经显示了成功提示
+ * - 不要重复显示，避免信息过载
+ *
+ * 企业项目经验：
+ * - 成功提示只显示一次
+ * - 不要在多个层级重复显示
+ * - 用户体验要简洁
+ */
+function handleWordAdded() {
+  wordPopupVisible.value = false
+}
+
+/**
+ * 处理字幕上传成功
+ *
+ * 流程：
+ * 1. 关闭上传对话框
+ * 2. 刷新页面以加载新字幕
+ *
+ * 为什么要刷新页面？
+ * - useSubtitle 在组件初始化时加载字幕
+ * - 上传新字幕后需要重新加载
+ * - 刷新页面是最简单的方式
+ *
+ * 企业项目经验：
+ * - 简单场景用简单方案
+ * - 不要过度设计响应式更新
+ */
+function handleSubtitleUploaded() {
+  subtitleUploadDialogVisible.value = false
+  // 刷新页面以加载新字幕
+  window.location.reload()
+}
+
 useKeyboardShortcuts({
   onTogglePlay: playerControls.togglePlay,
   onSeekBackward: handleSeekBackward,
@@ -331,11 +533,15 @@ onUnmounted(() => {
           :src="videoUrl"
           @timeupdate="handleTimeUpdate"
           @loadedmetadata="handleLoadedMetadata"
+          @error="handleVideoError"
         />
 
         <SubtitleOverlay
           v-if="currentSubtitle && subtitleVisible"
           :text="currentSubtitle.text"
+          :subtitle-index="currentSubtitle.index"
+          :start-time="currentSubtitle.startTime"
+          @word-click="handleWordClick"
         />
       </div>
 
@@ -365,6 +571,21 @@ onUnmounted(() => {
       />
     </div>
 
+    <!-- WordPopup -->
+    <WordPopup
+      v-if="selectedWord"
+      :visible="wordPopupVisible"
+      :display-text="selectedWord.displayText"
+      :lookup-text="selectedWord.lookupText"
+      :normalized-word="selectedWord.normalizedWord"
+      :context="selectedWord.context"
+      :timestamp="selectedWord.timestamp"
+      :video-id="props.videoId"
+      :subtitle-index="selectedWord.subtitleIndex"
+      @close="handlePopupClose"
+      @added="handleWordAdded"
+    />
+
     <!-- Subtitle List -->
     <div v-if="!loading && !error" class="subtitle-list-container">
       <SubtitleList
@@ -377,11 +598,24 @@ onUnmounted(() => {
       />
       <div v-else class="subtitle-list-empty">
         <p>No subtitles available</p>
-        <el-button type="primary" size="small" @click="$router.push(`/player/${props.videoId}?upload=subtitle`)">
+        <el-button type="primary" size="small" @click="subtitleUploadDialogVisible = true">
           Upload Subtitle
         </el-button>
       </div>
     </div>
+
+    <!-- Subtitle Upload Dialog -->
+    <el-dialog
+      v-model="subtitleUploadDialogVisible"
+      title="Upload Subtitle"
+      width="500px"
+      :close-on-click-modal="false"
+    >
+      <SubtitleUploader
+        :video-id="props.videoId"
+        @uploaded="handleSubtitleUploaded"
+      />
+    </el-dialog>
   </div>
 </template>
 

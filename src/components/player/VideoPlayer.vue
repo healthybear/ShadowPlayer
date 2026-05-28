@@ -23,8 +23,12 @@
       ref="videoRef"
       class="video-player__video"
       :src="src"
+      controls
       @timeupdate="handleTimeUpdate"
       @loadedmetadata="handleLoadedMetadata"
+      @error="handleError"
+      @loadstart="handleLoadStart"
+      @canplay="handleCanPlay"
     />
   </div>
 </template>
@@ -48,6 +52,7 @@ defineProps<Props>()
 const emit = defineEmits<{
   timeupdate: [time: number]
   loadedmetadata: [duration: number]
+  error: [error: string]
 }>()
 
 // ref<HTMLVideoElement> 的作用：
@@ -66,7 +71,68 @@ const handleTimeUpdate = (event: Event) => {
 
 const handleLoadedMetadata = (event: Event) => {
   const video = event.target as HTMLVideoElement
+  console.log('[VideoPlayer] Video metadata loaded:', {
+    duration: video.duration,
+    videoWidth: video.videoWidth,
+    videoHeight: video.videoHeight,
+    src: video.src?.substring(0, 50) + '...'
+  })
   emit('loadedmetadata', video.duration)
+}
+
+/**
+ * 处理视频加载错误
+ *
+ * 企业项目经验：
+ * - 视频加载失败的原因很多：格式不支持、文件损坏、权限问题等
+ * - 必须捕获错误并给用户清晰的提示
+ * - error.code 可以帮助诊断具体问题
+ */
+const handleError = (event: Event) => {
+  const video = event.target as HTMLVideoElement
+  const error = video.error
+
+  let errorMessage = 'Failed to load video'
+  if (error) {
+    switch (error.code) {
+      case MediaError.MEDIA_ERR_ABORTED:
+        errorMessage = 'Video loading was aborted'
+        break
+      case MediaError.MEDIA_ERR_NETWORK:
+        errorMessage = 'Network error while loading video'
+        break
+      case MediaError.MEDIA_ERR_DECODE:
+        errorMessage = 'Video decoding failed. The file may be corrupted.'
+        break
+      case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+        errorMessage = 'Video format not supported by your browser'
+        break
+    }
+    console.error('[VideoPlayer] Video error:', errorMessage, error)
+  }
+
+  emit('error', errorMessage)
+}
+
+/**
+ * 处理视频开始加载
+ */
+const handleLoadStart = () => {
+  console.log('[VideoPlayer] Video loading started')
+}
+
+/**
+ * 处理视频可以播放
+ */
+const handleCanPlay = () => {
+  const video = videoRef.value
+  if (video) {
+    console.log('[VideoPlayer] Video can play:', {
+      videoWidth: video.videoWidth,
+      videoHeight: video.videoHeight,
+      duration: video.duration
+    })
+  }
 }
 
 // defineExpose 的作用：
