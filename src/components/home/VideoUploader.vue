@@ -5,64 +5,66 @@ import { useRouter } from 'vue-router'
 import { useVideoStorage } from '@/composables/useVideoStorage'
 
 const router = useRouter()
-const { uploading, uploadProgress, uploadStage, uploadVideo } = useVideoStorage()
+const { uploading, uploadProgress, uploadStage, uploadVideo, isFileSystemAccessSupported } = useVideoStorage()
 
 const dragOver = ref(false)
-const fileInputRef = ref<HTMLInputElement | null>(null)
 
-function handleFileSelect(event: Event) {
-  const target = event.target as HTMLInputElement
-  if (target.files && target.files.length > 0) {
-    const file = target.files[0]
-    if (file) {
-      processFile(file)
-    }
-  }
-}
-
+/**
+ * 处理拖放上传
+ *
+ * 企业项目经验：
+ * - 拖放上传无法获取 fileHandle，因为不是用户直接点击
+ * - 但我们强制要求 fileHandle，所以拖放后需要再次请求用户选择
+ * - 这是 File System Access API 的限制
+ */
 function handleDrop(event: DragEvent) {
   dragOver.value = false
   if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
     const file = event.dataTransfer.files[0]
     if (file) {
-      processFile(file)
+      // 拖放的文件无法获取 fileHandle，提示用户点击上传
+      ElMessage.warning({
+        message: 'Please click to select the file to enable file access',
+        duration: 3000
+      })
     }
   }
 }
 
-async function processFile(file: File) {
+/**
+ * 打开文件选择器并上传
+ *
+ * 企业项目经验：
+ * - showOpenFilePicker 必须在用户手势（点击）的直接调用栈中执行
+ * - 不能在 <input type="file"> 的 change 事件中调用
+ * - 直接在按钮点击时调用，确保符合浏览器安全策略
+ */
+async function openFilePicker() {
   try {
-    // 检查是否支持 File System Access API
-    const { isFileSystemAccessSupported } = useVideoStorage()
-
-    let fileHandle: FileSystemFileHandle | undefined
-
-    if (isFileSystemAccessSupported()) {
-      // 支持 File System Access API，获取文件句柄
-      // 企业项目经验：
-      // - File System Access API 只存储文件引用，不占用存储空间
-      // - 需要在用户手势中调用 showOpenFilePicker
-      try {
-        const [handle] = await window.showOpenFilePicker({
-          types: [{
-            description: 'Video files',
-            accept: {
-              'video/*': ['.mp4', '.webm', '.mkv']
-            }
-          }],
-          multiple: false
-        })
-        fileHandle = handle
-      } catch (err) {
-        // 用户取消选择或不支持
-        console.warn('Failed to get file handle:', err)
-        throw new Error('Please select a video file using the file picker')
-      }
-    } else {
-      // 不支持 File System Access API
-      throw new Error('Your browser does not support File System Access API. Please use a modern browser like Chrome, Edge, or Opera.')
+    // 检查浏览器支持
+    if (!isFileSystemAccessSupported()) {
+      throw new Error('Your browser does not support File System Access API. Please use Chrome, Edge, or Opera.')
     }
 
+    // 打开文件选择器
+    // 企业项目经验：
+    // - showOpenFilePicker 返回 fileHandle 和 file
+    // - fileHandle 是持久引用，file 是当前内容
+    // - 我们需要同时保存两者
+    const [fileHandle] = await window.showOpenFilePicker({
+      types: [{
+        description: 'Video files',
+        accept: {
+          'video/*': ['.mp4', '.webm', '.mkv', '.avi', '.mov']
+        }
+      }],
+      multiple: false
+    })
+
+    // 获取文件内容
+    const file = await fileHandle.getFile()
+
+    // 上传视频
     const video = await uploadVideo(file, fileHandle)
 
     ElMessage.success({
@@ -70,19 +72,24 @@ async function processFile(file: File) {
       duration: 2000
     })
 
+    // 跳转到播放页面
     setTimeout(() => {
       router.push(`/player/${video.id}`)
     }, 500)
+
   } catch (error) {
+    // 用户取消选择
+    if (error instanceof Error && error.name === 'AbortError') {
+      return
+    }
+
+    // 其他错误
+    console.error('Upload failed:', error)
     ElMessage.error({
       message: error instanceof Error ? error.message : 'Upload failed',
       duration: 3000
     })
   }
-}
-
-function openFilePicker() {
-  fileInputRef.value?.click()
 }
 </script>
 
@@ -99,20 +106,13 @@ function openFilePicker() {
     >
       <div class="upload-icon">📁</div>
       <div class="upload-text">
-        <p class="primary-text">Drag & drop video file here</p>
-        <p class="secondary-text">or click to select</p>
+        <p class="primary-text">Click to select video file</p>
+        <p class="secondary-text">File System Access API required</p>
       </div>
       <div class="supported-formats">
-        <p>Supports MP4, WebM, MKV</p>
-        <p>Maximum 2GB</p>
+        <p>Supports MP4, WebM, MKV, AVI, MOV</p>
+        <p>Only stores file reference (no storage space used)</p>
       </div>
-      <input
-        ref="fileInputRef"
-        type="file"
-        accept="video/mp4,video/webm,video/x-matroska"
-        style="display: none"
-        @change="handleFileSelect"
-      >
     </div>
 
     <div v-else class="upload-progress">

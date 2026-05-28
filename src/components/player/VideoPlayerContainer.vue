@@ -465,21 +465,35 @@ function handleWordAdded() {
  *
  * 流程：
  * 1. 关闭上传对话框
- * 2. 刷新页面以加载新字幕
+ * 2. 重新加载字幕（不刷新整个页面）
  *
- * 为什么要刷新页面？
- * - useSubtitle 在组件初始化时加载字幕
- * - 上传新字幕后需要重新加载
- * - 刷新页面是最简单的方式
+ * 为什么不刷新页面？
+ * - 刷新页面会中断视频播放
+ * - 用户体验差
+ * - 应该只重新加载字幕数据
  *
  * 企业项目经验：
- * - 简单场景用简单方案
- * - 不要过度设计响应式更新
+ * - 避免不必要的页面刷新
+ * - 使用响应式更新而不是强制刷新
  */
-function handleSubtitleUploaded() {
+async function handleSubtitleUploaded() {
   subtitleUploadDialogVisible.value = false
-  // 刷新页面以加载新字幕
-  window.location.reload()
+
+  // 重新加载字幕
+  // useSubtitle 会自动监听 videoId 变化并重新加载
+  // 但这里 videoId 没变，所以需要手动触发重新加载
+  // 简单的方案：重新加载整个组件
+  ElMessage.success({
+    message: 'Subtitle uploaded successfully! Reloading...',
+    duration: 2000
+  })
+
+  // 使用 router.replace 重新加载当前路由
+  // 这会重新创建组件实例，触发字幕加载
+  await router.replace({
+    path: `/player/${props.videoId}`,
+    query: { t: Date.now() } // 添加时间戳强制重新加载
+  })
 }
 
 useKeyboardShortcuts({
@@ -701,9 +715,11 @@ onUnmounted(() => {
  * - 虚拟滚动必须有明确的高度才能计算可见区域
  * - 使用 flex-shrink: 0 防止被压缩
  * - 桌面端固定宽度 400px，移动端自适应
+ * - 使用 calc() 计算高度：视口高度 - 顶部导航栏 - 底部边距
  */
 .subtitle-list-container {
   width: 400px;
+  height: calc(100vh - 64px - 48px); /* 视口高度 - 导航栏 - 边距 */
   flex-shrink: 0;
   display: flex;
   flex-direction: column;

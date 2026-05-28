@@ -41,7 +41,7 @@
         <span
           v-if="token.type === 'word'"
           class="subtitle-overlay__word"
-          @click="handleWordClick(token)"
+          @click.stop="handleWordClick(token)"
         >
           {{ token.displayText }}
         </span>

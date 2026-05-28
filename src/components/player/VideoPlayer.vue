@@ -23,7 +23,6 @@
       ref="videoRef"
       class="video-player__video"
       :src="src"
-      controls
       @timeupdate="handleTimeUpdate"
       @loadedmetadata="handleLoadedMetadata"
       @error="handleError"
