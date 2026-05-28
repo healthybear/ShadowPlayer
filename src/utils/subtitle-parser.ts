@@ -1,5 +1,12 @@
 import type { SubtitleEntry } from '@/db/schema'
 
+/**
+ * 解析时间戳
+ *
+ * 支持多种格式：
+ * - SRT/VTT: HH:MM:SS,mmm 或 HH:MM:SS.mmm
+ * - ASS: H:MM:SS.cc (centiseconds)
+ */
 export function parseTimestamp(timestamp: string): number {
   const parts = timestamp.replace(',', '.').split(':')
 
@@ -16,6 +23,47 @@ export function parseTimestamp(timestamp: string): number {
   }
 
   return 0
+}
+
+/**
+ * 解析 ASS 时间戳
+ *
+ * ASS 格式：H:MM:SS.cc (centiseconds)
+ * 例如：0:00:05.50 表示 5.5 秒
+ */
+function parseASSTimestamp(timestamp: string): number {
+  const parts = timestamp.trim().split(':')
+
+  if (parts.length === 3) {
+    const h = parseInt(parts[0] || '0')
+    const m = parseInt(parts[1] || '0')
+    const sParts = (parts[2] || '0').split('.')
+    const s = parseInt(sParts[0] || '0')
+    const cs = parseInt(sParts[1] || '0') // centiseconds
+
+    return h * 3600 + m * 60 + s + cs / 100
+  }
+
+  return 0
+}
+
+/**
+ * 移除 ASS 样式标签
+ *
+ * ASS 字幕包含样式标签，如：
+ * - {\i1}斜体{\i0}
+ * - {\b1}粗体{\b0}
+ * - {\c&HFFFFFF&}颜色
+ * - {\pos(x,y)}位置
+ *
+ * 企业项目经验：
+ * - 简单的文本播放器不需要渲染这些样式
+ * - 移除标签，只保留纯文本
+ * - 如果需要完整样式支持，应该使用专门的 ASS 渲染库
+ */
+function stripASSStyles(text: string): string {
+  // 移除所有 {} 包裹的样式标签
+  return text.replace(/\{[^}]*\}/g, '').trim()
 }
 
 export function parseSRT(content: string): SubtitleEntry[] {
@@ -99,6 +147,71 @@ export function parseVTT(content: string): SubtitleEntry[] {
     }
 
     i++
+  }
+
+  return entries
+}
+
+/**
+ * 解析 ASS/SSA 字幕
+ *
+ * ASS (Advanced SubStation Alpha) 格式说明：
+ * - 包含 [Script Info]、[V4+ Styles]、[Events] 等段落
+ * - 对话行格式：Dialogue: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text
+ *
+ * 企业项目经验：
+ * - ASS 是功能最强大的字幕格式，支持复杂样式和特效
+ * - 完整支持需要专门的渲染引擎（如 libass）
+ * - 这里只提取基本的时间和文本信息
+ * - 样式标签被移除，只保留纯文本
+ */
+export function parseASS(content: string): SubtitleEntry[] {
+  const lines = content.split('\n')
+  const entries: SubtitleEntry[] = []
+  let index = 0
+  let inEvents = false
+
+  // 查找 [Events] 段落
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]?.trim()
+    if (!line) continue
+
+    // 检测 [Events] 段落开始
+    if (line === '[Events]') {
+      inEvents = true
+      continue
+    }
+
+    // 检测新段落开始（离开 [Events]）
+    if (inEvents && line.startsWith('[') && line.endsWith(']')) {
+      break
+    }
+
+    // 解析对话行
+    if (inEvents && line.startsWith('Dialogue:')) {
+      // 格式：Dialogue: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text
+      const parts = line.substring('Dialogue:'.length).split(',')
+
+      if (parts.length >= 10) {
+        const start = parts[1]?.trim()
+        const end = parts[2]?.trim()
+        // Text 是第 10 个字段之后的所有内容（可能包含逗号）
+        const text = parts.slice(9).join(',').trim()
+
+        if (start && end && text) {
+          entries.push({
+            index: index++,
+            startTime: parseASSTimestamp(start),
+            endTime: parseASSTimestamp(end),
+            text: stripASSStyles(text)
+          })
+        }
+      }
+    }
+  }
+
+  if (entries.length === 0) {
+    throw new Error('No dialogue entries found in ASS file.')
   }
 
   return entries

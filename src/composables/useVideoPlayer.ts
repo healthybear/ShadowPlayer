@@ -248,6 +248,15 @@ export function useVideoPlayer(videoElement: Ref<HTMLVideoElement | null>): Vide
     isMuted.value = video.muted
     playbackRate.value = video.playbackRate
 
+    // 确保视频不是静音状态
+    // 企业项目经验：
+    // - 某些浏览器默认静音视频以符合自动播放策略
+    // - 用户手动上传视频后期望有声音
+    // - 初始化时取消静音，确保用户体验
+    if (video.muted) {
+      video.muted = false
+    }
+
     // 生命周期思维：清理函数
     // watch 的返回值会在以下情况执行：
     // 1. videoElement 变化（切换到新视频）

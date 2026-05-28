@@ -37,7 +37,7 @@
     <input
       ref="fileInputRef"
       type="file"
-      accept=".srt,.vtt"
+      accept=".srt,.vtt,.ass,.ssa"
       style="display: none"
       @change="handleFileSelect"
     />
@@ -47,7 +47,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { parseSRT, parseVTT } from '@/utils/subtitle-parser'
+import { parseSRT, parseVTT, parseASS } from '@/utils/subtitle-parser'
 import { db } from '@/db/schema'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -85,8 +85,8 @@ async function handleFileSelect(event: Event) {
     // - 前端验证文件扩展名，避免用户选择错误文件
     // - 后续还要验证文件内容，确保格式正确
     const extension = file.name.split('.').pop()?.toLowerCase()
-    if (extension !== 'srt' && extension !== 'vtt') {
-      throw new Error('Unsupported subtitle format. Please select SRT or VTT files.')
+    if (extension !== 'srt' && extension !== 'vtt' && extension !== 'ass' && extension !== 'ssa') {
+      throw new Error('Unsupported subtitle format. Please select SRT, VTT, ASS, or SSA files.')
     }
 
     // 读取文件内容
@@ -96,11 +96,16 @@ async function handleFileSelect(event: Event) {
     // 企业项目经验：
     // - 解析失败时抛出错误，让用户知道文件格式有问题
     // - 不同格式使用不同的解析器
+    // - ASS 和 SSA 格式相同，都用 parseASS
     let entries
     if (extension === 'srt') {
       entries = parseSRT(content)
-    } else {
+    } else if (extension === 'vtt') {
       entries = parseVTT(content)
+    } else if (extension === 'ass' || extension === 'ssa') {
+      entries = parseASS(content)
+    } else {
+      throw new Error('Unsupported subtitle format')
     }
 
     // 验证解析结果
