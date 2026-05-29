@@ -17,10 +17,10 @@
 -->
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElInput, ElIcon, ElEmpty, ElButton, ElMessageBox, ElMessage } from 'element-plus'
-import { Search, Loading, VideoPlay, Delete } from '@element-plus/icons-vue'
+import { Search, Loading, VideoPlay, Delete, Download } from '@element-plus/icons-vue'
 import { useVocabulary } from '@/composables/useVocabulary'
 import type { VocabularyItem } from '@/db/schema'
 
@@ -28,10 +28,13 @@ defineOptions({ name: 'VocabularyPageView' })
 
 const router = useRouter()
 const vocabulary = ref<VocabularyItem[]>([])
+const filteredVocabulary = ref<VocabularyItem[]>([])
 const loading = ref(true)
+const exporting = ref(false)
 const searchKeyword = ref('')
+const searchRequestId = ref(0)
 
-const { getVocabularyList, deleteWord, searchVocabulary } = useVocabulary()
+const { getVocabularyList, deleteWord, searchVocabulary, exportVocabularyToCsv } = useVocabulary()
 
 /**
  * 加载词汇列表
@@ -40,6 +43,7 @@ async function loadVocabulary() {
   loading.value = true
   try {
     vocabulary.value = await getVocabularyList()
+    await refreshFilteredVocabulary()
   } catch (error) {
     console.error('Failed to load vocabulary:', error)
     ElMessage.error('Failed to load vocabulary')
@@ -49,20 +53,53 @@ async function loadVocabulary() {
 }
 
 /**
- * 过滤词汇列表
+ * 根据搜索词刷新当前展示列表
  *
- * 使用 normalizedWord 进行搜索，性能更好
+ * 为什么不用 template 内联过滤？
+ * - 搜索规则应该和数据访问层保持一致，避免页面和 composable 各维护一套逻辑
+ * - 未来如果词汇量增长到几千条，可以直接复用 IndexedDB 索引搜索，而不是每次渲染都全表过滤
  */
-const filteredVocabulary = computed(() => {
-  if (!searchKeyword.value) return vocabulary.value
+async function refreshFilteredVocabulary() {
+  const requestId = ++searchRequestId.value
+  const keyword = searchKeyword.value.trim()
 
-  const keyword = searchKeyword.value.toLowerCase()
-  return vocabulary.value.filter(item =>
-    item.normalizedWord.includes(keyword) ||
-    item.word.toLowerCase().includes(keyword) ||
-    item.translation?.toLowerCase().includes(keyword)
-  )
-})
+  if (!keyword) {
+    filteredVocabulary.value = vocabulary.value
+    return
+  }
+
+  try {
+    const items = await searchVocabulary(keyword)
+
+    // 只接受最后一次搜索结果，避免用户快速输入时旧请求覆盖新结果。
+    if (requestId === searchRequestId.value) {
+      filteredVocabulary.value = items
+    }
+  } catch (error) {
+    console.error('Failed to search vocabulary:', error)
+    ElMessage.error('Failed to search vocabulary')
+  }
+}
+
+/**
+ * 导出当前筛选结果为 CSV
+ *
+ * 企业项目经验：导出当前视图结果比导出全量数据更符合用户心智。
+ * 用户先搜索、再导出，拿到的应该就是当前看到的学习清单。
+ */
+async function handleExportCsv() {
+  exporting.value = true
+
+  try {
+    await exportVocabularyToCsv(filteredVocabulary.value)
+    ElMessage.success(`Exported ${filteredVocabulary.value.length} words to CSV`)
+  } catch (error) {
+    console.error('Failed to export vocabulary:', error)
+    ElMessage.error('Failed to export vocabulary')
+  } finally {
+    exporting.value = false
+  }
+}
 
 /**
  * 处理单词点击
@@ -165,6 +202,10 @@ function formatTime(seconds: number): string {
 onMounted(() => {
   loadVocabulary()
 })
+
+watch(searchKeyword, () => {
+  refreshFilteredVocabulary()
+})
 </script>
 
 <template>
@@ -186,8 +227,19 @@ onMounted(() => {
           </template>
         </el-input>
 
+        <el-button
+          type="primary"
+          plain
+          :loading="exporting"
+          :disabled="loading || filteredVocabulary.length === 0"
+          @click="handleExportCsv"
+        >
+          <el-icon><Download /></el-icon>
+          <span>Export CSV</span>
+        </el-button>
+
         <div class="stats">
-          <span>{{ vocabulary.length }} words</span>
+          <span>{{ filteredVocabulary.length }} / {{ vocabulary.length }} words</span>
         </div>
       </div>
 

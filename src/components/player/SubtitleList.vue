@@ -78,6 +78,10 @@ import { ref } from 'vue'
 import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
 import SubtitleListItem from './SubtitleListItem.vue'
 
+interface DynamicScrollerPublicApi {
+  scrollToItem(index: number): void
+}
+
 interface Subtitle {
   id: string
   time: string
@@ -103,7 +107,7 @@ const emit = defineEmits<{
 // 企业项目经验：
 // - 需要暴露给父组件，让父组件可以调用 scrollToItem() 方法
 // - 这是虚拟滚动的核心 API，用于程序化滚动
-const scrollerRef = ref<InstanceType<typeof DynamicScroller>>()
+const scrollerRef = ref<DynamicScrollerPublicApi | null>(null)
 
 /**
  * 处理滚动事件

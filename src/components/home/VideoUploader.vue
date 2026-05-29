@@ -46,12 +46,17 @@ async function openFilePicker() {
       throw new Error('Your browser does not support File System Access API. Please use Chrome, Edge, or Opera.')
     }
 
+    const showOpenFilePicker = window.showOpenFilePicker
+    if (!showOpenFilePicker) {
+      throw new Error('showOpenFilePicker is not available in this browser')
+    }
+
     // 打开文件选择器
     // 企业项目经验：
     // - showOpenFilePicker 返回 fileHandle 和 file
     // - fileHandle 是持久引用，file 是当前内容
     // - 我们需要同时保存两者
-    const [fileHandle] = await window.showOpenFilePicker({
+    const [fileHandle] = await showOpenFilePicker({
       types: [{
         description: 'Video files',
         accept: {
@@ -60,6 +65,10 @@ async function openFilePicker() {
       }],
       multiple: false
     })
+
+    if (!fileHandle) {
+      throw new Error('No file selected')
+    }
 
     // 获取文件内容
     const file = await fileHandle.getFile()

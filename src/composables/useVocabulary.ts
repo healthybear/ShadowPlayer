@@ -251,16 +251,127 @@ export function useVocabulary() {
     try {
       const normalizedQuery = query.toLowerCase().trim()
       if (!normalizedQuery) {
-        return []
+        return getVocabularyList()
       }
 
-      const items = await db.vocabulary
+      const indexedItems = await db.vocabulary
         .where('normalizedWord')
         .startsWith(normalizedQuery)
         .sortBy('createdAt')
-      return items.reverse()
+
+      // 混合搜索策略：前缀搜索走索引，翻译/上下文等补充字段走内存过滤。
+      // 这样既保留大列表下的搜索性能，也不会牺牲学习场景里常用的上下文搜索能力。
+      const allItems = await db.vocabulary.toArray()
+      const matchedIds = new Set(indexedItems.map(item => item.id))
+      const fuzzyMatchedItems = allItems.filter((item) => {
+        if (matchedIds.has(item.id)) {
+          return false
+        }
+
+        const searchableText = [
+          item.word,
+          item.translation,
+          item.context,
+          item.definition,
+          item.pronunciation,
+          item.videoTitle,
+          ...(item.definitions?.map(def => `${def.partOfSpeech} ${def.definition} ${def.example ?? ''}`) ?? []),
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+
+        return searchableText.includes(normalizedQuery)
+      })
+
+      return [...indexedItems, ...fuzzyMatchedItems]
+        .sort((a, b) => b.createdAt - a.createdAt)
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to search vocabulary'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * 导出词汇表为 CSV
+   *
+   * CSV 适合导入 Excel / Google Sheets，也便于学生二次整理。
+   *
+   * 企业项目经验：
+   * - CSV 字段要固定顺序，避免后续数据分析脚本频繁适配
+   * - 需要处理逗号、引号、换行，避免导出后列错位
+   * - 下载链接使用后要及时释放，避免长期页面会话中的内存泄漏
+   */
+  async function exportVocabularyToCsv(items?: VocabularyItem[]): Promise<void> {
+    loading.value = true
+    error.value = null
+
+    try {
+      const exportItems = items ?? await getVocabularyList()
+
+      const headers = [
+        'word',
+        'normalizedWord',
+        'translation',
+        'pronunciation',
+        'definitions',
+        'context',
+        'videoTitle',
+        'videoId',
+        'timestamp',
+        'subtitleIndex',
+        'source',
+        'createdAt',
+      ]
+
+      const escapeCsvField = (value: string | number | undefined): string => {
+        if (value === undefined || value === null) {
+          return '""'
+        }
+
+        const serializedValue = String(value).replace(/"/g, '""')
+        return `"${serializedValue}"`
+      }
+
+      const rows = exportItems.map((item) => {
+        const definitions = item.definitions?.map(def => {
+          const example = def.example ? ` (${def.example})` : ''
+          return `${def.partOfSpeech}: ${def.definition}${example}`
+        }).join(' | ') ?? item.definition ?? ''
+
+        return [
+          item.word,
+          item.normalizedWord,
+          item.translation,
+          item.pronunciation,
+          definitions,
+          item.context,
+          item.videoTitle,
+          item.videoId,
+          item.timestamp,
+          item.subtitleIndex,
+          item.source,
+          new Date(item.createdAt).toISOString(),
+        ].map(escapeCsvField).join(',')
+      })
+
+      const csvContent = [headers.join(','), ...rows].join('\n')
+
+      // 添加 UTF-8 BOM，避免 Excel 打开中文内容时出现乱码。
+      const blob = new Blob(['\uFEFF', csvContent], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
+
+      link.href = url
+      link.download = `shadowplayer-vocabulary-${timestamp}.csv`
+      link.click()
+
+      setTimeout(() => URL.revokeObjectURL(url), 100)
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to export vocabulary'
       throw err
     } finally {
       loading.value = false
@@ -277,5 +388,6 @@ export function useVocabulary() {
     getVocabularyList,
     getVocabularyByVideo,
     searchVocabulary,
+    exportVocabularyToCsv,
   }
 }

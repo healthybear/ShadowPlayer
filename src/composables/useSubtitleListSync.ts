@@ -2,6 +2,10 @@ import { ref, computed, watch, type Ref } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import type { SubtitleEntry } from '@/db/schema'
 
+interface SubtitleScrollerRef {
+  scrollToItem(index: number): void
+}
+
 /**
  * useSubtitleListSync Composable
  *
@@ -35,7 +39,7 @@ export interface SubtitleListSyncOptions {
   subtitles: Ref<SubtitleEntry[]>
 
   // DynamicScroller 的 ref（用于调用 scrollToItem）
-  scrollerRef: Ref<any>
+  scrollerRef: Ref<SubtitleScrollerRef | null>
 }
 
 export function useSubtitleListSync(options: SubtitleListSyncOptions) {

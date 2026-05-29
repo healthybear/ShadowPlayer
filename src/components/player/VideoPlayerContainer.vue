@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElButton, ElIcon, ElDialog } from 'element-plus'
 import { Loading, Warning } from '@element-plus/icons-vue'
 import { useVideoPlayer } from '@/composables/useVideoPlayer'
@@ -17,12 +17,17 @@ import SubtitleList from './SubtitleList.vue'
 import WordPopup from './WordPopup.vue'
 import SubtitleUploader from './SubtitleUploader.vue'
 
+interface SubtitleListScrollerApi {
+  scrollToItem(index: number): void
+}
+
 interface Props {
   videoId: string
 }
 
 const props = defineProps<Props>()
 const route = useRoute()
+const router = useRouter()
 
 const videoPlayerRef = ref<InstanceType<typeof VideoPlayer> | null>(null)
 const videoElement = computed(() => videoPlayerRef.value?.videoRef ?? null)
@@ -31,7 +36,7 @@ const loading = ref(true)
 const error = ref<string>('')
 
 // Subtitle list ref for programmatic scrolling
-const subtitleListScrollerRef = ref<any>(null)
+const subtitleListScrollerRef = ref<SubtitleListScrollerApi | null>(null)
 
 // WordPopup 状态
 const wordPopupVisible = ref(false)
